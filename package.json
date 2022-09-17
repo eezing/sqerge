@@ -15,7 +15,7 @@
     "singleQuote": true
   },
   "devDependencies": {
-    "@types/node": "^16.11.59",
+    "@types/node": "^18.7.18",
     "prettier": "^2.7.1",
     "typescript": "^4.8.3"
   },
