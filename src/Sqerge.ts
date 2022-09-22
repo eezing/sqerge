@@ -29,7 +29,10 @@ export default class Sqerge {
     );
 
     if (isConsistent === false) {
-      throw new SqergeError('files inconsistent with migration history');
+      throw new SqergeError(
+        'inconsistent_files',
+        'files inconsistent with migration history'
+      );
     }
 
     const nextMigrationList = fileList
@@ -56,6 +59,7 @@ export default class Sqerge {
           } catch (error) {
             if (error instanceof PostgresError) {
               throw new SqergeError(
+                'migration_file_query_error',
                 '(migration reverted on query error) %s: %s',
                 item.file,
                 error.message
@@ -78,7 +82,11 @@ export default class Sqerge {
         .sort((a, b) => parsePrefix(a) - parsePrefix(b));
     } catch (error: any) {
       if (error?.code === 'ENOENT') {
-        throw new SqergeError('directory not found: %O', fileDir);
+        throw new SqergeError(
+          'dir_not_found',
+          'directory not found: %O',
+          fileDir
+        );
       }
 
       throw error;
@@ -108,6 +116,7 @@ export default class Sqerge {
 
     if (!ctx.sql) {
       throw new SqergeError(
+        'js_file_invalid',
         'the %O global variable is %O in file %O',
         undefined,
         path

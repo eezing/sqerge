@@ -9,7 +9,7 @@ export function isNodeError<T extends new (...args: any) => Error>(
 }
 
 export class SqergeError extends Error {
-  constructor(message: string, ...args: any) {
+  constructor(public code: string, message: string, ...args: any) {
     super(formatWithOptions({ colors: true }, message, ...args));
   }
 }
