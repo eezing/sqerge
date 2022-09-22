@@ -46,3 +46,27 @@ export async function withSqergeErrorHandler(
     throw error;
   }
 }
+
+export function groupByFirstMatch(
+  items: string[],
+  pattern: RegExp
+): [string, string[]][] {
+  const map = new Map<string, string[]>();
+
+  for (const item of items) {
+    const check = pattern.exec(item);
+
+    if (check) {
+      const match = check[1];
+      const matchList = map.get(match);
+
+      if (matchList) {
+        matchList.push(item);
+      } else {
+        map.set(match, [item]);
+      }
+    }
+  }
+
+  return Array.from(map.entries());
+}

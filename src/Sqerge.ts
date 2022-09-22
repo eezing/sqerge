@@ -1,8 +1,8 @@
 import { readdirSync, readFileSync } from 'node:fs';
+import { resolve as pathResolve } from 'node:path';
 import { Script } from 'node:vm';
 import { PostgresError, Sql } from 'postgres';
 import { SqergeError } from './utils';
-import { resolve as pathResolve } from 'node:path';
 
 export default class Sqerge {
   private sql: Sql<{}>;
@@ -13,7 +13,7 @@ export default class Sqerge {
     this.log = input.log || (() => {});
   }
 
-  private readonly filePattern = /^\d+-.*[.](sql|js)$/;
+  private readonly filePattern = /^(\d+)-.*[.](sql|js)$/;
 
   async migrate(fileDir: string) {
     const fileList = this.getFileList(fileDir);
@@ -77,9 +77,11 @@ export default class Sqerge {
     try {
       const parsePrefix = (file: string) => parseInt(file.split('-')[0]);
 
-      return readdirSync(fileDir)
+      const list = readdirSync(fileDir)
         .filter((file) => this.filePattern.test(file))
         .sort((a, b) => parsePrefix(a) - parsePrefix(b));
+
+      return list;
     } catch (error: any) {
       if (error?.code === 'ENOENT') {
         throw new SqergeError(
