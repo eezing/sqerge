@@ -2,7 +2,7 @@ import { readdirSync, readFileSync } from 'node:fs';
 import { resolve as pathResolve } from 'node:path';
 import { Script } from 'node:vm';
 import { PostgresError, Sql } from 'postgres';
-import { SqergeError } from './utils';
+import { groupByFirstMatch, SqergeError } from './utils';
 
 export default class Sqerge {
   private sql: Sql<{}>;
@@ -80,6 +80,19 @@ export default class Sqerge {
       const list = readdirSync(fileDir)
         .filter((file) => this.filePattern.test(file))
         .sort((a, b) => parsePrefix(a) - parsePrefix(b));
+
+      const duplicatePrefixes = groupByFirstMatch(
+        list,
+        this.filePattern
+      ).filter((g) => g[1].length > 1);
+
+      if (duplicatePrefixes.length) {
+        throw new SqergeError(
+          'duplicate_file_prefix',
+          'found files with duplicate prefix: %O',
+          duplicatePrefixes
+        );
+      }
 
       return list;
     } catch (error: any) {
