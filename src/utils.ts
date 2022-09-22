@@ -17,7 +17,7 @@ export class SqergeError extends Error {
 
 export const log = (message: string, ...args: any) =>
   console.log(
-    `${colors.green('[')}${colors.cyan('sqerge')}${colors.green(
+    `${colors.magenta('[')}${colors.cyan('sqerge')}${colors.magenta(
       ']'
     )} ${message}`,
     ...args
