@@ -2,7 +2,7 @@ import { Command } from 'commander';
 import { resolve as pathResolve } from 'node:path';
 import postgres from 'postgres';
 import Sqerge from './Sqerge';
-import { withSqergeErrorHandler } from './utils';
+import { log, withSqergeErrorHandler } from './utils';
 
 const program = new Command();
 
@@ -18,9 +18,6 @@ program
   .option('--password <PGPASSWORD>', 'user password')
   .option('--database <PGDATABASE>', 'database name')
   .action(async (dir, options) => {
-    const log = (message: string, ...args: any) =>
-      console.log(`[sqerge] ${message}`, ...args);
-
     await withSqergeErrorHandler(async () => {
       const sql = postgres({
         host: options.host,
@@ -40,7 +37,7 @@ program
       } finally {
         await sql.end();
       }
-    }, log);
+    });
   });
 
 program.parse();

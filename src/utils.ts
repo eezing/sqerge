@@ -1,3 +1,4 @@
+import colors from 'colors/safe';
 import { formatWithOptions } from 'node:util';
 import { PostgresError } from 'postgres';
 
@@ -14,29 +15,36 @@ export class SqergeError extends Error {
   }
 }
 
-export async function withSqergeErrorHandler(
-  callback: () => Promise<void>,
-  log: typeof console.log
-) {
+export const log = (message: string, ...args: any) =>
+  console.log(
+    `${colors.green('[')}${colors.cyan('sqerge')}${colors.green(
+      ']'
+    )} ${message}`,
+    ...args
+  );
+
+export async function withSqergeErrorHandler(callback: () => Promise<void>) {
   try {
     await callback();
   } catch (error) {
     if (error instanceof SqergeError) {
-      log(error.message);
+      log(`${colors.bold(colors.red('(error)'))} ${error.message}`);
       process.exit(1);
     } else if (error instanceof PostgresError) {
-      log(`database error: ${error.message}`);
+      log(`${colors.bold(colors.red('(database error)'))} ${error.message}`);
       process.exit(1);
     } else if (isNodeError(error, Error)) {
       if (error.code === 'ECONNREFUSED') {
         log(
-          'database error: connection refused at %O',
+          `${colors.bold(
+            colors.red('(database error)')
+          )} connection refused at %O`,
           error.message.split('ECONNREFUSED ')[1]
         );
         process.exit(1);
       } else if (error.code === 'ENOTFOUND') {
         log(
-          'database error: host not found at %O',
+          `${colors.bold(colors.red('(database error)'))} host not found at %O`,
           error.message.split('ENOTFOUND ')[1]
         );
         process.exit(1);
