@@ -42,7 +42,7 @@ program
 
 program
   .command('history')
-  .description('check current migration state')
+  .description('list of previous migrations')
   .option('--host <PGHOST>', 'database server host')
   .option('--port <PGPORT>', 'database server port')
   .option('--user <PGUSER>', 'database user')
@@ -63,6 +63,38 @@ program
 
       try {
         await sqerge.history();
+      } catch (error) {
+        throw error;
+      } finally {
+        await sql.end();
+      }
+    });
+  });
+
+program
+  .command('next')
+  .description('list files in next migration')
+  .argument('<dir>', 'path to directory of migration files')
+  .option('--host <PGHOST>', 'database server host')
+  .option('--port <PGPORT>', 'database server port')
+  .option('--user <PGUSER>', 'database user')
+  .option('--password <PGPASSWORD>', 'user password')
+  .option('--database <PGDATABASE>', 'database name')
+  .action(async (dir, options) => {
+    await withSqergeErrorHandler(async () => {
+      const sql = postgres({
+        host: options.host,
+        port: parseInt(options.port),
+        user: options.user,
+        password: options.password,
+        database: options.database,
+        onnotice: () => {},
+      });
+
+      const sqerge = new Sqerge({ sql, log });
+
+      try {
+        await sqerge.next(pathResolve(dir));
       } catch (error) {
         throw error;
       } finally {
