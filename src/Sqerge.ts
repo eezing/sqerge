@@ -73,6 +73,22 @@ export default class Sqerge {
     this.log('done!');
   }
 
+  async history() {
+    await this.createMigrationTable();
+    const history = await this.getMigrationHistory();
+
+    this.log(
+      '%O file(s) previously migrated: %O',
+      history.length,
+      history.map((row) => ({
+        file: row.file,
+        at: new Date(row.createdAt).toLocaleString(),
+      }))
+    );
+
+    return history;
+  }
+
   getFileList(fileDir: string): string[] {
     try {
       const parsePrefix = (file: string) => parseInt(file.split('-')[0]);
