@@ -2,6 +2,7 @@ import { Sql } from 'postgres';
 import {
   getFileList,
   log,
+  SqergeError,
   sqlCreateMigrationTable,
   sqlGetMigrationHistory,
 } from '../utils';
@@ -14,6 +15,22 @@ export default async function next(sql: Sql<{}>, fileDir: string) {
   const history = await sqlGetMigrationHistory(sql);
   log('%O file(s) previously migrated', history.length);
 
-  const next = fileList.slice(history.length);
-  log('%O new files to migrate: %O', next.length, next);
+  const isConsistent = history.every(
+    (row, index) => row.file === fileList[index]
+  );
+
+  if (isConsistent === false) {
+    throw new SqergeError(
+      'inconsistent_files',
+      'files inconsistent with migration history'
+    );
+  }
+
+  const nextMigrationList = fileList.slice(history.length);
+
+  log(
+    '%O new files to migrate: %O',
+    nextMigrationList.length,
+    nextMigrationList
+  );
 }
