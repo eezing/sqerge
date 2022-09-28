@@ -1,10 +1,9 @@
 import { Command } from 'commander';
 import { resolve as pathResolve } from 'node:path';
-import postgres from 'postgres';
 import history from './actions/history';
 import migrate from './actions/migrate';
 import next from './actions/next';
-import { withSqergeErrorHandler } from './utils';
+import { sqlInit, withSqergeErrorHandler } from './utils';
 
 const program = new Command();
 
@@ -21,14 +20,7 @@ program
   .option('--database <PGDATABASE>', 'database name')
   .action(async (dir, options) => {
     await withSqergeErrorHandler(async () => {
-      const sql = postgres({
-        host: options.host,
-        port: parseInt(options.port),
-        user: options.user,
-        password: options.password,
-        database: options.database,
-        onnotice: () => {},
-      });
+      const sql = sqlInit(options);
 
       try {
         await migrate(sql, pathResolve(dir));
@@ -51,14 +43,7 @@ program
   .option('--database <PGDATABASE>', 'database name')
   .action(async (dir, options) => {
     await withSqergeErrorHandler(async () => {
-      const sql = postgres({
-        host: options.host,
-        port: parseInt(options.port),
-        user: options.user,
-        password: options.password,
-        database: options.database,
-        onnotice: () => {},
-      });
+      const sql = sqlInit(options);
 
       try {
         await next(sql, pathResolve(dir));
@@ -80,14 +65,7 @@ program
   .option('--database <PGDATABASE>', 'database name')
   .action(async (options) => {
     await withSqergeErrorHandler(async () => {
-      const sql = postgres({
-        host: options.host,
-        port: parseInt(options.port),
-        user: options.user,
-        password: options.password,
-        database: options.database,
-        onnotice: () => {},
-      });
+      const sql = sqlInit(options);
 
       try {
         await history(sql);

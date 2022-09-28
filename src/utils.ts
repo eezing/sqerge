@@ -1,7 +1,7 @@
 import colors from 'colors/safe';
 import { readdirSync } from 'fs';
 import { formatWithOptions } from 'node:util';
-import { PostgresError, Sql } from 'postgres';
+import postgres, { PostgresError, Sql } from 'postgres';
 
 export function isNodeError<T extends new (...args: any) => Error>(
   value: unknown,
@@ -15,6 +15,16 @@ export class SqergeError extends Error {
     super(formatWithOptions({ colors: true }, message, ...args));
   }
 }
+
+export const sqlInit = (options: any) =>
+  postgres({
+    host: options.host,
+    port: parseInt(options.port),
+    user: options.user,
+    password: options.password,
+    database: options.database,
+    onnotice: () => {},
+  });
 
 export const log = (message: string, ...args: any) =>
   console.log(
