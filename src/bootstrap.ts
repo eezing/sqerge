@@ -1,8 +1,10 @@
 import { Command } from 'commander';
 import { resolve as pathResolve } from 'node:path';
 import postgres from 'postgres';
-import Sqerge from './Sqerge';
-import { log, withSqergeErrorHandler } from './utils';
+import history from './actions/history';
+import migrate from './actions/migrate';
+import next from './actions/next';
+import { withSqergeErrorHandler } from './utils';
 
 const program = new Command();
 
@@ -28,10 +30,8 @@ program
         onnotice: () => {},
       });
 
-      const sqerge = new Sqerge({ sql, log });
-
       try {
-        await sqerge.migrate(pathResolve(dir));
+        await migrate(sql, pathResolve(dir));
       } catch (error) {
         throw error;
       } finally {
@@ -59,10 +59,8 @@ program
         onnotice: () => {},
       });
 
-      const sqerge = new Sqerge({ sql, log });
-
       try {
-        await sqerge.history();
+        await history(sql);
       } catch (error) {
         throw error;
       } finally {
@@ -91,10 +89,8 @@ program
         onnotice: () => {},
       });
 
-      const sqerge = new Sqerge({ sql, log });
-
       try {
-        await sqerge.next(pathResolve(dir));
+        await next(sql, dir);
       } catch (error) {
         throw error;
       } finally {

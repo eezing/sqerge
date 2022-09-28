@@ -1,6 +1,8 @@
 import colors from 'colors/safe';
+import { readdirSync, readFileSync } from 'fs';
 import { formatWithOptions } from 'node:util';
-import { PostgresError } from 'postgres';
+import { PostgresError, Sql } from 'postgres';
+import { Script } from 'vm';
 
 export function isNodeError<T extends new (...args: any) => Error>(
   value: unknown,
@@ -22,6 +24,99 @@ export const log = (message: string, ...args: any) =>
     )} ${message}`,
     ...args
   );
+
+export function groupByFirstMatch(
+  items: string[],
+  pattern: RegExp
+): [string, string[]][] {
+  const map = new Map<string, string[]>();
+
+  for (const item of items) {
+    const check = pattern.exec(item);
+
+    if (check) {
+      const match = check[1];
+      const matchList = map.get(match);
+
+      if (matchList) {
+        matchList.push(item);
+      } else {
+        map.set(match, [item]);
+      }
+    }
+  }
+
+  return Array.from(map.entries());
+}
+
+export function getFileList(dir: string): string[] {
+  const filePattern = /^(\d+)-.*[.](sql|js)$/;
+
+  try {
+    const parsePrefix = (file: string) => parseInt(file.split('-')[0]);
+
+    const fileList = readdirSync(dir)
+      .filter((file) => filePattern.test(file))
+      .sort((a, b) => parsePrefix(a) - parsePrefix(b));
+
+    const duplicatePrefixes = groupByFirstMatch(fileList, filePattern).filter(
+      (g) => g[1].length > 1
+    );
+
+    if (duplicatePrefixes.length) {
+      throw new SqergeError(
+        'duplicate_file_prefix',
+        'found files with duplicate prefix',
+        duplicatePrefixes
+      );
+    }
+
+    return fileList;
+  } catch (error: any) {
+    if (error?.code === 'ENOENT') {
+      throw new SqergeError('dir_not_found', 'directory not found', dir);
+    }
+
+    throw error;
+  }
+}
+
+export function sqlCreateMigrationTable(sql: Sql<{}>) {
+  return sql`
+    CREATE TABLE IF NOT EXISTS sqerge_migration (
+      id SERIAL NOT NULL PRIMARY KEY,
+      file text NOT NULL UNIQUE,
+      "createdAt" timestamptz NOT NULL DEFAULT now()
+    );
+  `;
+}
+
+export function sqlInsertMigration(sql: Sql<{}>, file: string) {
+  return sql`INSERT INTO sqerge_migration ("file") VALUES (${file});`;
+}
+
+export function sqlGetMigrationHistory(sql: Sql<{}>) {
+  return sql<{ id: string; file: string; createdAt: string }[]>`
+    SELECT * FROM sqerge_migration ORDER BY "id";
+  `;
+}
+
+export function loadSqlFromJsFile(path: string) {
+  const vm = new Script(readFileSync(path).toString());
+  const ctx: { sql?: string } = {};
+  vm.runInNewContext(ctx);
+
+  if (!ctx.sql) {
+    throw new SqergeError(
+      'js_file_invalid',
+      'the %O global variable is %O in file %O',
+      undefined,
+      path
+    );
+  }
+
+  return ctx.sql;
+}
 
 export async function withSqergeErrorHandler(callback: () => Promise<void>) {
   try {
@@ -53,28 +148,4 @@ export async function withSqergeErrorHandler(callback: () => Promise<void>) {
 
     throw error;
   }
-}
-
-export function groupByFirstMatch(
-  items: string[],
-  pattern: RegExp
-): [string, string[]][] {
-  const map = new Map<string, string[]>();
-
-  for (const item of items) {
-    const check = pattern.exec(item);
-
-    if (check) {
-      const match = check[1];
-      const matchList = map.get(match);
-
-      if (matchList) {
-        matchList.push(item);
-      } else {
-        map.set(match, [item]);
-      }
-    }
-  }
-
-  return Array.from(map.entries());
 }
