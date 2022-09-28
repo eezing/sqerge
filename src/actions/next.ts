@@ -29,7 +29,7 @@ export default async function next(sql: Sql<{}>, fileDir: string) {
   const nextMigrationList = fileList.slice(history.length);
 
   log(
-    '%O new files to migrate: %O',
+    '%O new file(s) to migrate: %O',
     nextMigrationList.length,
     nextMigrationList
   );

@@ -32,7 +32,7 @@ export default async function migrate(sql: Sql<{}>, fileDir: string) {
     .slice(history.length)
     .map((file, index) => ({ file, index }));
 
-  log('%O new files to migrate', nextMigrationList.length);
+  log('%O new file(s) to migrate', nextMigrationList.length);
 
   if (nextMigrationList.length) {
     log('running migration...');
