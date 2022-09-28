@@ -16,8 +16,8 @@ export class SqergeError extends Error {
   }
 }
 
-export const sqlInit = (options: any) =>
-  postgres({
+export const sqlInit = (options: any) => {
+  const sql = postgres({
     host: options.host,
     port: parseInt(options.port),
     user: options.user,
@@ -25,6 +25,13 @@ export const sqlInit = (options: any) =>
     database: options.database,
     onnotice: () => {},
   });
+
+  process.on('exit', async () => {
+    await sql.end();
+  });
+
+  return sql;
+};
 
 export const log = (message: string, ...args: any) =>
   console.log(
@@ -126,34 +133,38 @@ export async function executeJsMigrationFile(sql: Sql<{}>, filePath: string) {
   }
 }
 
-export async function withSqergeErrorHandler(callback: () => Promise<void>) {
-  try {
-    await callback();
-  } catch (error) {
-    if (error instanceof SqergeError) {
-      log(`${colors.bold(colors.red('(error)'))} ${error.message}`);
-      process.exit(1);
-    } else if (error instanceof PostgresError) {
-      log(`${colors.bold(colors.red('(database error)'))} ${error.message}`);
-      process.exit(1);
-    } else if (isNodeError(error, Error)) {
-      if (error.code === 'ECONNREFUSED') {
-        log(
-          `${colors.bold(
-            colors.red('(database error)')
-          )} connection refused at %O`,
-          error.message.split('ECONNREFUSED ')[1]
-        );
-        process.exit(1);
-      } else if (error.code === 'ENOTFOUND') {
-        log(
-          `${colors.bold(colors.red('(database error)'))} host not found at %O`,
-          error.message.split('ENOTFOUND ')[1]
-        );
-        process.exit(1);
+export const withActionWrapper = <T extends (...args: any) => Promise<void>>(
+  callback: T
+) =>
+  (async (...args: any) => {
+    try {
+      await callback(...args);
+      process.exit(0);
+    } catch (error) {
+      if (error instanceof SqergeError) {
+        log(`${colors.bold(colors.red('(error)'))} ${error.message}`);
+      } else if (error instanceof PostgresError) {
+        log(`${colors.bold(colors.red('(database error)'))} ${error.message}`);
+      } else if (isNodeError(error, Error)) {
+        if (error.code === 'ECONNREFUSED') {
+          log(
+            `${colors.bold(
+              colors.red('(database error)')
+            )} connection refused at %O`,
+            error.message.split('ECONNREFUSED ')[1]
+          );
+        } else if (error.code === 'ENOTFOUND') {
+          log(
+            `${colors.bold(
+              colors.red('(database error)')
+            )} host not found at %O`,
+            error.message.split('ENOTFOUND ')[1]
+          );
+        }
+      } else {
+        console.error(error);
       }
-    }
 
-    throw error;
-  }
-}
+      process.exit(1);
+    }
+  }) as unknown as T;

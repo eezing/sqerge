@@ -14,6 +14,4 @@ export default async function history(sql: Sql<{}>) {
       at: new Date(row.createdAt).toLocaleString(),
     }))
   );
-
-  return history;
 }

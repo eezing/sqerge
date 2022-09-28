@@ -3,7 +3,11 @@ import { resolve as pathResolve } from 'node:path';
 import history from './actions/history';
 import migrate from './actions/migrate';
 import next from './actions/next';
-import { sqlInit, withSqergeErrorHandler } from './utils';
+import { sqlInit, withActionWrapper } from './utils';
+
+const migrateAction = withActionWrapper(migrate);
+const nextAction = withActionWrapper(next);
+const historyAction = withActionWrapper(history);
 
 const program = new Command();
 
@@ -18,19 +22,7 @@ program
   .option('--user <PGUSER>', 'database user')
   .option('--password <PGPASSWORD>', 'user password')
   .option('--database <PGDATABASE>', 'database name')
-  .action(async (dir, options) => {
-    await withSqergeErrorHandler(async () => {
-      const sql = sqlInit(options);
-
-      try {
-        await migrate(sql, pathResolve(dir));
-      } catch (error) {
-        throw error;
-      } finally {
-        await sql.end();
-      }
-    });
-  });
+  .action((dir, options) => migrateAction(sqlInit(options), pathResolve(dir)));
 
 program
   .command('next')
@@ -41,19 +33,7 @@ program
   .option('--user <PGUSER>', 'database user')
   .option('--password <PGPASSWORD>', 'user password')
   .option('--database <PGDATABASE>', 'database name')
-  .action(async (dir, options) => {
-    await withSqergeErrorHandler(async () => {
-      const sql = sqlInit(options);
-
-      try {
-        await next(sql, pathResolve(dir));
-      } catch (error) {
-        throw error;
-      } finally {
-        await sql.end();
-      }
-    });
-  });
+  .action((dir, options) => nextAction(sqlInit(options), pathResolve(dir)));
 
 program
   .command('history')
@@ -63,18 +43,6 @@ program
   .option('--user <PGUSER>', 'database user')
   .option('--password <PGPASSWORD>', 'user password')
   .option('--database <PGDATABASE>', 'database name')
-  .action(async (options) => {
-    await withSqergeErrorHandler(async () => {
-      const sql = sqlInit(options);
-
-      try {
-        await history(sql);
-      } catch (error) {
-        throw error;
-      } finally {
-        await sql.end();
-      }
-    });
-  });
+  .action((options) => historyAction(sqlInit(options)));
 
 program.parse();

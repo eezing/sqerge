@@ -24,7 +24,7 @@ export default async function migrate(sql: Sql<{}>, fileDir: string) {
   if (isConsistent === false) {
     throw new SqergeError(
       'inconsistent_files',
-      'files inconsistent with migration history'
+      'file(s) inconsistent with migration history'
     );
   }
 
