@@ -14,7 +14,6 @@ export default async function migrate(sql: Sql<{}>, fileDir: string) {
   log('%O file(s) found in %O', fileList.length, fileDir);
 
   await sqlCreateMigrationTable(sql);
-
   const history = await sqlGetMigrationHistory(sql);
   log('%O file(s) previously migrated', history.length);
 
