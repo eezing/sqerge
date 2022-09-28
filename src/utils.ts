@@ -134,11 +134,11 @@ export async function executeJsMigrationFile(sql: Sql<{}>, filePath: string) {
 }
 
 export const withActionWrapper = <T extends (...args: any) => Promise<void>>(
-  callback: T
+  action: T
 ) =>
   (async (...args: any) => {
     try {
-      await callback(...args);
+      await action(...args);
       process.exit(0);
     } catch (error) {
       if (error instanceof SqergeError) {
