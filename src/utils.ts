@@ -1,8 +1,7 @@
 import colors from 'colors/safe';
-import { readdirSync, readFileSync } from 'fs';
+import { readdirSync } from 'fs';
 import { formatWithOptions } from 'node:util';
 import { PostgresError, Sql } from 'postgres';
-import { Script } from 'vm';
 
 export function isNodeError<T extends new (...args: any) => Error>(
   value: unknown,
@@ -101,21 +100,20 @@ export function sqlGetMigrationHistory(sql: Sql<{}>) {
   `;
 }
 
-export function loadSqlFromJsFile(path: string) {
-  const vm = new Script(readFileSync(path).toString());
-  const ctx: { sql?: string } = {};
-  vm.runInNewContext(ctx);
+export async function executeJsMigrationFile(sql: Sql<{}>, filePath: string) {
+  const module = await import(filePath);
 
-  if (!ctx.sql) {
+  if (typeof module.default === 'string') {
+    await sql`${sql.unsafe(module.default)}`;
+  } else if (typeof module.default === 'function') {
+    await module.default(sql);
+  } else {
     throw new SqergeError(
-      'js_file_invalid',
-      'the %O global variable is %O in file %O',
-      undefined,
-      path
+      'invalid_js_migration_file',
+      '%O default export must be a string or function',
+      filePath
     );
   }
-
-  return ctx.sql;
 }
 
 export async function withSqergeErrorHandler(callback: () => Promise<void>) {

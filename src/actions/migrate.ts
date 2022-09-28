@@ -1,8 +1,8 @@
 import { resolve as pathResolve } from 'node:path';
 import { PostgresError, Sql } from 'postgres';
 import {
+  executeJsMigrationFile,
   getFileList,
-  loadSqlFromJsFile,
   log,
   SqergeError,
   sqlCreateMigrationTable,
@@ -46,7 +46,7 @@ export default async function migrate(sql: Sql<{}>, fileDir: string) {
           if (item.file.endsWith('.sql')) {
             await sql.file(filePath);
           } else if (item.file.endsWith('.js')) {
-            await sql`${sql.unsafe(loadSqlFromJsFile(filePath))}`;
+            await executeJsMigrationFile(sql, filePath);
           }
 
           await sql`INSERT INTO sqerge_migration ("file") VALUES (${item.file})`;
@@ -58,6 +58,8 @@ export default async function migrate(sql: Sql<{}>, fileDir: string) {
               item.file,
               error.message
             );
+          } else {
+            throw error;
           }
         }
       }
