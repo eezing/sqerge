@@ -11,6 +11,7 @@ export default async function history(sql: Sql<{}>) {
     history.length,
     history.map((row) => ({
       file: row.file,
+      flags: row.flags,
       at: new Date(row.createdAt).toLocaleString(),
     }))
   );

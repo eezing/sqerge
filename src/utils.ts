@@ -102,6 +102,7 @@ export function sqlCreateMigrationTable(sql: Sql<{}>) {
     CREATE TABLE IF NOT EXISTS sqerge_migration (
       id SERIAL NOT NULL PRIMARY KEY,
       file text NOT NULL UNIQUE,
+      flags text[],
       "createdAt" timestamptz NOT NULL DEFAULT now()
     );
   `;
@@ -112,18 +113,24 @@ export function sqlInsertMigration(sql: Sql<{}>, file: string) {
 }
 
 export function sqlGetMigrationHistory(sql: Sql<{}>) {
-  return sql<{ id: string; file: string; createdAt: string }[]>`
+  return sql<
+    { id: string; file: string; flags: string[]; createdAt: string }[]
+  >`
     SELECT * FROM sqerge_migration ORDER BY "id";
   `;
 }
 
-export async function executeJsMigrationFile(sql: Sql<{}>, filePath: string) {
+export async function executeJsMigrationFile(
+  sql: Sql<{}>,
+  filePath: string,
+  flags: string[]
+) {
   const module = await import(filePath);
 
   if (typeof module.default === 'string') {
     await sql`${sql.unsafe(module.default)}`;
   } else if (typeof module.default === 'function') {
-    await module.default(sql);
+    await module.default(sql, flagsReduce(flags));
   } else {
     throw new SqergeError(
       'invalid_js_migration_file',
@@ -133,6 +140,9 @@ export async function executeJsMigrationFile(sql: Sql<{}>, filePath: string) {
   }
 }
 
+export const flagsReduce = (flags: string[]): { [key: string]: true } =>
+  flags.reduce((out, flag) => ({ ...out, [flag]: true }), {});
+
 export const withActionWrapper = <T extends (...args: any) => Promise<void>>(
   action: T
 ) =>
@@ -141,12 +151,14 @@ export const withActionWrapper = <T extends (...args: any) => Promise<void>>(
       await action(...args);
       process.exit(0);
     } catch (error) {
-      if (error instanceof SqergeError) {
-        log(`${colors.bold(colors.red('(error)'))} ${error.message}`);
-      } else if (error instanceof PostgresError) {
-        log(`${colors.bold(colors.red('(database error)'))} ${error.message}`);
-      } else if (isNodeError(error, Error)) {
-        if (error.code === 'ECONNREFUSED') {
+      if (isNodeError(error, Error)) {
+        if (error instanceof SqergeError) {
+          log(`${colors.bold(colors.red('(error)'))} ${error.message}`);
+        } else if (error instanceof PostgresError) {
+          log(
+            `${colors.bold(colors.red('(database error)'))} ${error.message}`
+          );
+        } else if (error.code === 'ECONNREFUSED') {
           log(
             `${colors.bold(
               colors.red('(database error)')
@@ -160,11 +172,13 @@ export const withActionWrapper = <T extends (...args: any) => Promise<void>>(
             )} host not found at %O`,
             error.message.split('ENOTFOUND ')[1]
           );
+        } else {
+          console.error(error);
         }
-      } else {
-        console.error(error);
+
+        process.exit(1);
       }
 
-      process.exit(1);
+      throw error;
     }
   }) as unknown as T;

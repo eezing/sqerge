@@ -22,7 +22,10 @@ program
   .option('--user <PGUSER>', 'database user')
   .option('--password <PGPASSWORD>', 'user password')
   .option('--database <PGDATABASE>', 'database name')
-  .action((dir, options) => migrateAction(sqlInit(options), pathResolve(dir)));
+  .option('--flag [string...]', 'flag(s) passed to .js migration files')
+  .action((dir, options) =>
+    migrateAction(sqlInit(options), pathResolve(dir), options.flag)
+  );
 
 program
   .command('next')

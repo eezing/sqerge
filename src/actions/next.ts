@@ -15,11 +15,7 @@ export default async function next(sql: Sql<{}>, fileDir: string) {
   const history = await sqlGetMigrationHistory(sql);
   log('%O file(s) previously migrated', history.length);
 
-  const isConsistent = history.every(
-    (row, index) => row.file === fileList[index]
-  );
-
-  if (isConsistent === false) {
+  if (!history.every((row, index) => row.file === fileList[index])) {
     throw new SqergeError(
       'inconsistent_files',
       'file(s) inconsistent with migration history'

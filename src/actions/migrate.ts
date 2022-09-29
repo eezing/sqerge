@@ -9,7 +9,11 @@ import {
   sqlGetMigrationHistory,
 } from '../utils';
 
-export default async function migrate(sql: Sql<{}>, fileDir: string) {
+export default async function migrate(
+  sql: Sql<{}>,
+  fileDir: string,
+  flags: string[] = []
+) {
   const fileList = getFileList(fileDir);
   log('%O file(s) found in %O', fileList.length, fileDir);
 
@@ -17,14 +21,19 @@ export default async function migrate(sql: Sql<{}>, fileDir: string) {
   const history = await sqlGetMigrationHistory(sql);
   log('%O file(s) previously migrated', history.length);
 
-  const isConsistent = history.every(
-    (row, index) => row.file === fileList[index]
-  );
-
-  if (isConsistent === false) {
+  if (!history.every((row, index) => row.file === fileList[index])) {
     throw new SqergeError(
       'inconsistent_files',
       'file(s) inconsistent with migration history'
+    );
+  }
+
+  if (
+    !history.every((row) => row.flags.every((flag) => flags.includes(flag)))
+  ) {
+    throw new SqergeError(
+      'inconsistent_flags',
+      'flag(s) inconsistent with migration history'
     );
   }
 
@@ -45,10 +54,10 @@ export default async function migrate(sql: Sql<{}>, fileDir: string) {
           if (item.file.endsWith('.sql')) {
             await sql.file(filePath);
           } else if (item.file.endsWith('.js')) {
-            await executeJsMigrationFile(sql, filePath);
+            await executeJsMigrationFile(sql, filePath, flags);
           }
 
-          await sql`INSERT INTO sqerge_migration ("file") VALUES (${item.file})`;
+          await sql`INSERT INTO sqerge_migration ("file", "flags") VALUES (${item.file}, ${flags})`;
         } catch (error) {
           if (error instanceof PostgresError) {
             throw new SqergeError(
