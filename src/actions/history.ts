@@ -1,6 +1,5 @@
 import { Sql } from 'postgres';
-import { log } from '../utils';
-import { sqlCreateMigrationTable, sqlGetMigrationHistory } from '../utils';
+import { log, sqlCreateMigrationTable, sqlGetMigrationHistory } from '../utils';
 
 export default async function history(sql: Sql<{}>) {
   await sqlCreateMigrationTable(sql);
@@ -11,7 +10,7 @@ export default async function history(sql: Sql<{}>) {
     history.length,
     history.map((row) => ({
       file: row.file,
-      flags: row.flags,
+      flags: row.flags ?? 'n/a',
       at: new Date(row.createdAt).toLocaleString(),
     }))
   );

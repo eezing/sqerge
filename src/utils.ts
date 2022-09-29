@@ -108,13 +108,17 @@ export function sqlCreateMigrationTable(sql: Sql<{}>) {
   `;
 }
 
-export function sqlInsertMigration(sql: Sql<{}>, file: string) {
-  return sql`INSERT INTO sqerge_migration ("file") VALUES (${file});`;
+export function sqlInsertMigration(
+  sql: Sql<{}>,
+  file: string,
+  flags: string[] | null = null
+) {
+  return sql`INSERT INTO sqerge_migration ("file", "flags") VALUES (${file}, ${flags});`;
 }
 
 export function sqlGetMigrationHistory(sql: Sql<{}>) {
   return sql<
-    { id: string; file: string; flags: string[]; createdAt: string }[]
+    { id: string; file: string; flags: string[] | null; createdAt: string }[]
   >`
     SELECT * FROM sqerge_migration ORDER BY "id";
   `;
@@ -127,21 +131,19 @@ export async function executeJsMigrationFile(
 ) {
   const module = await import(filePath);
 
-  if (typeof module.default === 'string') {
-    await sql`${sql.unsafe(module.default)}`;
-  } else if (typeof module.default === 'function') {
-    await module.default(sql, flagsReduce(flags));
+  if (typeof module.default === 'function') {
+    await module.default(
+      sql,
+      flags.reduce((out, flag) => ({ ...out, [flag]: true }), {})
+    );
   } else {
     throw new SqergeError(
       'invalid_js_migration_file',
-      '%O default export must be a string or function',
+      'file %O default export must be a function',
       filePath
     );
   }
 }
-
-export const flagsReduce = (flags: string[]): { [key: string]: true } =>
-  flags.reduce((out, flag) => ({ ...out, [flag]: true }), {});
 
 export const withActionWrapper = <T extends (...args: any) => Promise<void>>(
   action: T

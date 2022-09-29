@@ -7,6 +7,7 @@ import {
   SqergeError,
   sqlCreateMigrationTable,
   sqlGetMigrationHistory,
+  sqlInsertMigration,
 } from '../utils';
 
 export default async function migrate(
@@ -29,11 +30,13 @@ export default async function migrate(
   }
 
   if (
-    !history.every((row) => row.flags.every((flag) => flags.includes(flag)))
+    !history.every(
+      (row) => row.flags?.every((flag) => flags.includes(flag)) ?? true
+    )
   ) {
     throw new SqergeError(
-      'inconsistent_flags',
-      'flag(s) inconsistent with migration history'
+      'missing_flags',
+      'previously used flag(s) are missing'
     );
   }
 
@@ -53,11 +56,11 @@ export default async function migrate(
 
           if (item.file.endsWith('.sql')) {
             await sql.file(filePath);
+            await sqlInsertMigration(sql, item.file);
           } else if (item.file.endsWith('.js')) {
             await executeJsMigrationFile(sql, filePath, flags);
+            await sqlInsertMigration(sql, item.file, flags);
           }
-
-          await sql`INSERT INTO sqerge_migration ("file", "flags") VALUES (${item.file}, ${flags})`;
         } catch (error) {
           if (error instanceof PostgresError) {
             throw new SqergeError(
