@@ -5,5 +5,4 @@ sqerge migrate ./ \
   --port 5438 \
   --user jonathan \
   --password iliketurtles \
-  --database dev \
-  --flag solo vader
+  --database dev

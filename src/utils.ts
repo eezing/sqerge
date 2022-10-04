@@ -1,7 +1,6 @@
 import colors from 'colors/safe';
-import { readdirSync } from 'fs';
 import { formatWithOptions } from 'node:util';
-import postgres, { PostgresError, Sql } from 'postgres';
+import postgres, { PostgresError } from 'postgres';
 
 export function isNodeError<T extends new (...args: any) => Error>(
   value: unknown,
@@ -33,7 +32,7 @@ export const sqlInit = (options: any) => {
   return sql;
 };
 
-export const log = (message: string, ...args: any) =>
+export const log: typeof console.log = (message, ...args) =>
   console.log(
     `${colors.magenta('[')}${colors.cyan('sqerge')}${colors.magenta(
       ']'
@@ -41,108 +40,18 @@ export const log = (message: string, ...args: any) =>
     ...args
   );
 
-export function groupByFirstMatch(
-  items: string[],
-  pattern: RegExp
-): [string, string[]][] {
-  const map = new Map<string, string[]>();
-
-  for (const item of items) {
-    const check = pattern.exec(item);
-
-    if (check) {
-      const match = check[1];
-      const matchList = map.get(match);
-
-      if (matchList) {
-        matchList.push(item);
-      } else {
-        map.set(match, [item]);
-      }
-    }
-  }
-
-  return Array.from(map.entries());
-}
-
-export function getFileList(dir: string): string[] {
-  const filePattern = /^(\d+)-.*[.](sql|js)$/;
-
-  try {
-    const parsePrefix = (file: string) => parseInt(file.split('-')[0]);
-
-    const fileList = readdirSync(dir)
-      .filter((file) => filePattern.test(file))
-      .sort((a, b) => parsePrefix(a) - parsePrefix(b));
-
-    const duplicatePrefixes = groupByFirstMatch(fileList, filePattern).filter(
-      (g) => g[1].length > 1
-    );
-
-    if (duplicatePrefixes.length) {
-      throw new SqergeError(
-        'duplicate_file_prefix',
-        'found files with duplicate prefix',
-        duplicatePrefixes
-      );
-    }
-
-    return fileList;
-  } catch (error: any) {
-    if (error?.code === 'ENOENT') {
-      throw new SqergeError('dir_not_found', 'directory not found', dir);
-    }
-
-    throw error;
-  }
-}
-
-export function sqlCreateMigrationTable(sql: Sql<{}>) {
-  return sql`
-    CREATE TABLE IF NOT EXISTS sqerge_migration (
-      id SERIAL NOT NULL PRIMARY KEY,
-      file text NOT NULL UNIQUE,
-      flags text[],
-      "createdAt" timestamptz NOT NULL DEFAULT now()
-    );
-  `;
-}
-
-export function sqlInsertMigration(
-  sql: Sql<{}>,
+export function fileMessage(
+  count: number,
   file: string,
-  flags: string[] | null = null
+  message: string,
+  ...args: any
 ) {
-  return sql`INSERT INTO sqerge_migration ("file", "flags") VALUES (${file}, ${flags});`;
-}
-
-export function sqlGetMigrationHistory(sql: Sql<{}>) {
-  return sql<
-    { id: string; file: string; flags: string[] | null; createdAt: string }[]
-  >`
-    SELECT * FROM sqerge_migration ORDER BY "id";
-  `;
-}
-
-export async function executeJsMigrationFile(
-  sql: Sql<{}>,
-  filePath: string,
-  flags: string[]
-) {
-  const module = await import(filePath);
-
-  if (typeof module.default === 'function') {
-    await module.default(
-      sql,
-      flags.reduce((out, flag) => ({ ...out, [flag]: true }), {})
-    );
-  } else {
-    throw new SqergeError(
-      'invalid_js_migration_file',
-      'file %O default export must be a function',
-      filePath
-    );
-  }
+  return formatWithOptions(
+    { colors: true },
+    `file %O (${colors.green(file)}): ${message}`,
+    count,
+    ...args
+  );
 }
 
 export const withActionWrapper = <T extends (...args: any) => Promise<void>>(
