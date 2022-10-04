@@ -1,7 +1,7 @@
 import { readdirSync } from 'fs';
 import { resolve as pathResolve } from 'node:path';
+import { formatWithOptions } from 'node:util';
 import { PostgresError, Sql } from 'postgres';
-import { fileMessage, SqergeError } from './utils';
 
 export default async function migrate(
   sql: Sql<{}>,
@@ -79,7 +79,13 @@ export default async function migrate(
   });
 }
 
-export function getFileList(dir: string): { prefix: number; file: string }[] {
+export class SqergeError extends Error {
+  constructor(public code: string, message: string, ...args: any) {
+    super(formatWithOptions({ colors: true }, message, ...args));
+  }
+}
+
+function getFileList(dir: string): { prefix: number; file: string }[] {
   const filePattern = /^(\d+)-.*[.](sql|js)$/;
 
   try {
@@ -96,7 +102,7 @@ export function getFileList(dir: string): { prefix: number; file: string }[] {
   }
 }
 
-export function createMigrationTable(sql: Sql<{}>) {
+function createMigrationTable(sql: Sql<{}>) {
   return sql`
     CREATE TABLE IF NOT EXISTS sqerge_migration (
       id SERIAL NOT NULL PRIMARY KEY,
@@ -108,7 +114,7 @@ export function createMigrationTable(sql: Sql<{}>) {
   `;
 }
 
-export function getMigrations(sql: Sql<{}>) {
+function getMigrations(sql: Sql<{}>) {
   return sql<
     {
       id: string;
@@ -121,11 +127,11 @@ export function getMigrations(sql: Sql<{}>) {
   `;
 }
 
-export function insertMigration(sql: Sql<{}>, prefix: number, file: string) {
+function insertMigration(sql: Sql<{}>, prefix: number, file: string) {
   return sql`INSERT INTO sqerge_migration ("prefix", "file") VALUES (${prefix}, ${file});`;
 }
 
-export async function executeJsMigrationFile(sql: Sql<{}>, filePath: string) {
+async function executeJsMigrationFile(sql: Sql<{}>, filePath: string) {
   const module = await import(filePath);
 
   if (typeof module.default === 'function') {
@@ -137,4 +143,18 @@ export async function executeJsMigrationFile(sql: Sql<{}>, filePath: string) {
       filePath
     );
   }
+}
+
+function fileMessage(
+  count: number,
+  file: string,
+  message: string,
+  ...args: any
+) {
+  return formatWithOptions(
+    { colors: true },
+    `file %O (\u001b[32m${file}\u001b[39m): ${message}`,
+    count,
+    ...args
+  );
 }

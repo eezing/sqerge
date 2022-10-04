@@ -1,8 +1,3 @@
 #!/bin/sh
 
-sqerge migrate ./ \
-  --host localhost \
-  --port 5438 \
-  --user jonathan \
-  --password iliketurtles \
-  --database dev
+PGHOST=localhost PGPORT=5438 PGUSER=jonathan PGPASSWORD=iliketurtles PGDATABASE=dev sqerge ./
