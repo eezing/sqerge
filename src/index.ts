@@ -12,10 +12,10 @@ export default async function migrate(
   log && log('%O file(s) found in %O', fileList.length, fileDir);
   if (fileList.length === 0) return;
 
-  await createMigrationTable(sql);
-  const migrationList = await getMigrations(sql);
-
   await sql.begin(async (sql) => {
+    await createMigrationTable(sql);
+    const migrationList = await getMigrations(sql);
+
     for (let i = 0; i < fileList.length; i++) {
       const count = i + 1;
       const { prefix, file } = fileList[i];
@@ -60,7 +60,7 @@ export default async function migrate(
                 fileMessage(
                   count,
                   file,
-                  'prefix in filename (%O) is already in use',
+                  'prefix (%O) in filename is already in use',
                   prefix
                 )
               );
