@@ -48,7 +48,7 @@ export default async function migrate(
             await executeJsMigrationFile(sql, filePath);
           }
         } catch (error) {
-          if (count > 0) log && log('rollback...');
+          log && count > 0 && log('rollback...');
 
           if (error instanceof PostgresError) {
             if (
