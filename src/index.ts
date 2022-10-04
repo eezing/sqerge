@@ -10,6 +10,7 @@ export default async function migrate(
 ) {
   const fileList = getFileList(fileDir);
   log && log('%O file(s) found in %O', fileList.length, fileDir);
+  if (fileList.length === 0) return;
 
   await createMigrationTable(sql);
   const migrationList = await getMigrations(sql);
@@ -40,7 +41,15 @@ export default async function migrate(
 
         try {
           await insertMigration(sql, prefix, file);
+
+          if (file.endsWith('sql')) {
+            await sql.file(filePath);
+          } else {
+            await executeJsMigrationFile(sql, filePath);
+          }
         } catch (error) {
+          if (count > 0) log && log('rollback...');
+
           if (error instanceof PostgresError) {
             if (
               error.code === '23505' &&
@@ -51,21 +60,20 @@ export default async function migrate(
                 fileMessage(
                   count,
                   file,
-                  'prefix %O in filename is already in use',
+                  'prefix in filename (%O) is already in use',
                   prefix
                 )
               );
             }
+
+            throw new SqergeError(
+              'sql_error',
+              fileMessage(count, file, `(sql) ${error.message}`)
+            );
           }
         }
 
-        if (file.endsWith('sql')) {
-          await sql.file(filePath);
-        } else {
-          await executeJsMigrationFile(sql, filePath);
-        }
-
-        log && log(fileMessage(count, file, 'migrated'));
+        log && log(fileMessage(count, file, 'executed'));
       }
     }
   });
