@@ -1,0 +1,26 @@
+{
+  "name": "sqerge",
+  "version": "1.0.0",
+  "private": true,
+  "main": "dist/index.js",
+  "bin": "bin.js",
+  "scripts": {
+    "dev": "tsc -w",
+    "dev-postgres": "node ./scripts/dev-postgres.js",
+    "build": "rm -rf dist && tsc --build",
+    "test": "prettier -c ."
+  },
+  "prettier": {
+    "bracketSpacing": true,
+    "semi": true,
+    "singleQuote": true
+  },
+  "devDependencies": {
+    "@types/node": "^16.11.59",
+    "prettier": "^2.7.1",
+    "typescript": "^4.8.4"
+  },
+  "dependencies": {
+    "postgres": "^3.3.1"
+  }
+}
