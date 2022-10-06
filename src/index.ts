@@ -81,7 +81,7 @@ export default async function migrate(
 
 export class SqergeError extends Error {
   constructor(public code: string, message: string, ...args: any) {
-    super(formatWithOptions({ colors: true }, message, ...args));
+    super(format({ colors: true }, message, ...args));
   }
 }
 
