@@ -8,7 +8,8 @@
     "dev": "tsc -w",
     "dev-postgres": "node ./scripts/dev-postgres.js",
     "build": "rm -rf dist && tsc --build",
-    "test": "prettier -c ."
+    "test": "prettier -c .",
+    "prepare": "husky install"
   },
   "prettier": {
     "bracketSpacing": true,
@@ -17,6 +18,7 @@
   },
   "devDependencies": {
     "@types/node": "^16.11.59",
+    "husky": "^8.0.0",
     "prettier": "^2.7.1",
     "typescript": "^4.8.4"
   },
