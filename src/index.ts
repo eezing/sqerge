@@ -1,6 +1,6 @@
 import { readdirSync } from 'fs';
 import { resolve as pathResolve } from 'node:path';
-import { format } from 'node:util';
+import { formatWithOptions } from 'node:util';
 import { PostgresError, Sql } from 'postgres';
 
 export default async function migrate(
@@ -81,7 +81,7 @@ export default async function migrate(
 
 export class SqergeError extends Error {
   constructor(public code: string, message: string, ...args: any) {
-    super(format({ colors: true }, message, ...args));
+    super(formatWithOptions({ colors: true }, message, ...args));
   }
 }
 
@@ -150,7 +150,8 @@ function fileMessage(
   message: string,
   ...args: any
 ) {
-  return format(
+  return formatWithOptions(
+    { colors: true },
     `file %O (\u001b[32m${file}\u001b[39m): ${message}`,
     count,
     ...args
