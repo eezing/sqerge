@@ -1,6 +1,6 @@
 import { readdirSync } from 'fs';
 import { resolve as pathResolve } from 'node:path';
-import { formatWithOptions } from 'node:util';
+import { format } from 'node:util';
 import { PostgresError, Sql } from 'postgres';
 
 export default async function migrate(
@@ -150,8 +150,7 @@ function fileMessage(
   message: string,
   ...args: any
 ) {
-  return formatWithOptions(
-    { colors: true },
+  return format(
     `file %O (\u001b[32m${file}\u001b[39m): ${message}`,
     count,
     ...args
