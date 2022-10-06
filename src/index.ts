@@ -108,7 +108,6 @@ function createMigrationTable(sql: Sql<{}>) {
       id SERIAL NOT NULL PRIMARY KEY,
       prefix int NOT NULL UNIQUE,
       file text NOT NULL UNIQUE,
-      flags text[],
       "createdAt" timestamptz NOT NULL DEFAULT now()
     );
   `;
