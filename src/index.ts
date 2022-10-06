@@ -68,7 +68,7 @@ export default async function migrate(
 
             throw new SqergeError(
               'sql_error',
-              fileMessage(count, file, `(sql) ${error.message}`)
+              fileMessage(count, file, `(sql execution) ${error.message}`)
             );
           }
         }
