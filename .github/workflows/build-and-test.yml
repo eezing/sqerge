@@ -23,4 +23,4 @@ jobs:
         run: npm run build
 
       - name: Test
-        run: npm link && test
+        run: npm link && npm test
