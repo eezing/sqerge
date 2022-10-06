@@ -5,24 +5,40 @@
   "main": "dist/index.js",
   "bin": "bin.js",
   "scripts": {
-    "dev": "tsc -w",
-    "dev-postgres": "node ./scripts/dev-postgres.js",
     "build": "rm -rf dist && tsc --build",
-    "test": "prettier -c .",
-    "prepare": "husky install"
+    "dev": "tsc -w",
+    "dev:postgres": "node ./scripts/dev-postgres.js",
+    "prepare": "husky install",
+    "test": "npm run test:prettier && npm run test:jest",
+    "test:jest": "jest",
+    "test:jest:watch": "jest --watch",
+    "test:prettier": "prettier -c ."
   },
   "prettier": {
     "bracketSpacing": true,
     "semi": true,
     "singleQuote": true
   },
-  "devDependencies": {
-    "@types/node": "^16.11.59",
-    "husky": "^8.0.0",
-    "prettier": "^2.7.1",
-    "typescript": "^4.8.4"
+  "jest": {
+    "collectCoverageFrom": [
+      "<rootDir>/src"
+    ],
+    "preset": "ts-jest",
+    "testEnvironment": "node",
+    "testMatch": [
+      "<rootDir>/src/**/__tests__/*.test.ts"
+    ]
   },
   "dependencies": {
     "postgres": "^3.3.1"
+  },
+  "devDependencies": {
+    "@types/jest": "^29.1.2",
+    "@types/node": "^16.11.59",
+    "husky": "^8.0.0",
+    "jest": "^29.1.2",
+    "prettier": "^2.7.1",
+    "ts-jest": "^29.0.3",
+    "typescript": "^4.8.4"
   }
 }

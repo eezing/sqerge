@@ -1,8 +1,8 @@
 module.exports = async (sql, flags) => {
   await sql`
     INSERT INTO person
-      ("name")
+      ("name", "age")
     VALUES
-      ('Luke Skywalker');
+      ('Luke Skywalker', '21');
   `;
 };

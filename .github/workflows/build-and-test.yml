@@ -22,5 +22,10 @@ jobs:
       - name: Build
         run: npm run build
 
+      - name: Test setup
+        run: |
+          npm link
+          npm run dev:postgres
+
       - name: Test
         run: npm test
