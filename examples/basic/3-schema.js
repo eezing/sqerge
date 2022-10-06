@@ -1,9 +1,8 @@
-module.exports = async (sql) => {
+module.exports = async (sql, flags) => {
   await sql`
     INSERT INTO person
       ("name")
     VALUES
-      ('Han Solo'),
-      ('Darth Vader');
+      ('Luke Skywalker');
   `;
 };

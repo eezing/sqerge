@@ -1,48 +1,60 @@
-import { Command } from 'commander';
 import { resolve as pathResolve } from 'node:path';
-import history from './actions/history';
-import migrate from './actions/migrate';
-import next from './actions/next';
-import { sqlInit, withActionWrapper } from './utils';
+import postgres, { PostgresError } from 'postgres';
+import migrate, { SqergeError } from './index';
 
-const migrateAction = withActionWrapper(migrate);
-const nextAction = withActionWrapper(next);
-const historyAction = withActionWrapper(history);
+(async function main() {
+  const log: typeof console.log = (message, ...args) =>
+    console.log(
+      `\u001b[35m[\u001b[39m\u001b[36msqerge\u001b[39m\u001b[35m]\u001b[39m ${message}`,
+      ...args
+    );
 
-const program = new Command();
+  const logError: typeof console.log = (message, ...args) =>
+    log(`\u001b[1m\u001b[31m(error)\u001b[39m\u001b[22m ${message}`, ...args);
 
-program.name('sqerge').description('Another SQL (PostgreSQL) migration tool');
+  try {
+    const dir = pathResolve(process.argv[2] ?? './');
 
-program
-  .command('migrate')
-  .description('execute migration')
-  .argument('<dir>', 'path to directory of migration files')
-  .option('--host <PGHOST>', 'database server host')
-  .option('--port <PGPORT>', 'database server port')
-  .option('--user <PGUSER>', 'database user')
-  .option('--password <PGPASSWORD>', 'user password')
-  .option('--database <PGDATABASE>', 'database name')
-  .action((dir, options) => migrateAction(sqlInit(options), pathResolve(dir)));
+    const sql = postgres({
+      onnotice: () => {},
+    });
 
-program
-  .command('next')
-  .description('list files in next migration')
-  .argument('<dir>', 'path to directory of migration files')
-  .option('--host <PGHOST>', 'database server host')
-  .option('--port <PGPORT>', 'database server port')
-  .option('--user <PGUSER>', 'database user')
-  .option('--password <PGPASSWORD>', 'user password')
-  .option('--database <PGDATABASE>', 'database name')
-  .action((dir, options) => nextAction(sqlInit(options), pathResolve(dir)));
+    process.on('exit', async () => {
+      await sql.end();
+    });
 
-program
-  .command('history')
-  .description('list of previous migrations')
-  .option('--host <PGHOST>', 'database server host')
-  .option('--port <PGPORT>', 'database server port')
-  .option('--user <PGUSER>', 'database user')
-  .option('--password <PGPASSWORD>', 'user password')
-  .option('--database <PGDATABASE>', 'database name')
-  .action((options) => historyAction(sqlInit(options)));
+    await migrate(sql, dir, log);
+    process.exit(0);
+  } catch (error) {
+    if (isNodeError(error, Error)) {
+      if (error instanceof SqergeError) {
+        logError(error.message);
+      } else if (error instanceof PostgresError) {
+        logError(error.message);
+      } else if (error.code === 'ECONNREFUSED') {
+        logError(
+          'database connection refused at %O',
+          error.message.split('ECONNREFUSED ')[1]
+        );
+      } else if (error.code === 'ENOTFOUND') {
+        logError(
+          'database host not found at %O',
+          error.message.split('ENOTFOUND ')[1]
+        );
+      } else {
+        console.error(error);
+      }
 
-program.parse();
+      process.exit(1);
+    }
+
+    throw error;
+  }
+})();
+
+function isNodeError<T extends new (...args: any) => Error>(
+  value: unknown,
+  errorType: T
+): value is InstanceType<T> & NodeJS.ErrnoException {
+  return value instanceof errorType;
+}
