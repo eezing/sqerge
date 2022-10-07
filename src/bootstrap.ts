@@ -24,12 +24,11 @@ import migrate, { SqergeError } from './index';
     });
 
     await migrate(sql, dir, log);
+
     process.exit(0);
   } catch (error) {
     if (isNodeError(error, Error)) {
-      if (error instanceof SqergeError) {
-        logError(error.message);
-      } else if (error instanceof PostgresError) {
+      if (error instanceof SqergeError || error instanceof PostgresError) {
         logError(error.message);
       } else if (error.code === 'ECONNREFUSED') {
         logError(
@@ -44,11 +43,11 @@ import migrate, { SqergeError } from './index';
       } else {
         console.error(error);
       }
-
-      process.exit(1);
+    } else {
+      console.error(error);
     }
 
-    throw error;
+    process.exit(1);
   }
 })();
 
