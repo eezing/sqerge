@@ -1,7 +1,24 @@
 {
   "name": "sqerge",
   "version": "1.0.0",
-  "private": true,
+  "description": "A forward only PostgreSQL migration tool.",
+  "keywords": [
+    "postgres",
+    "postgresql",
+    "sql",
+    "migrate",
+    "migration"
+  ],
+  "homepage": "https://github.com/eezing/sqerge#readme",
+  "bugs": {
+    "url": "https://github.com/eezing/sqerge/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/eezing/sqerge.git"
+  },
+  "license": "ISC",
+  "author": "Eric Zingeler <eezing@gmail.com>",
   "main": "dist/index.js",
   "bin": "bin.js",
   "scripts": {
