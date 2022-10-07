@@ -1,5 +1,7 @@
 # sqerge
 
+[![Build + Tests](https://github.com/eezing/sqerge/actions/workflows/on-push.yml/badge.svg?branch=main)](https://github.com/eezing/sqerge/actions/workflows/on-push.yml)
+
 A forward only PostgreSQL migration tool. Uses [Postgres.js](https://github.com/porsager/postgres) library under the hood.
 
 ## Get Started
