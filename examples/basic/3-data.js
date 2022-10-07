@@ -1,4 +1,4 @@
-module.exports = async (sql, flags) => {
+module.exports = async (sql) => {
   await sql`
     INSERT INTO person
       ("name", "age")
