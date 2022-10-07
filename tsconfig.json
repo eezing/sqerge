@@ -11,5 +11,6 @@
     "noUnusedParameters": true,
     "outDir": "dist",
     "rootDir": "src"
-  }
+  },
+  "exclude": ["**/__tests__"]
 }

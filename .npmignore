@@ -1,0 +1,7 @@
+.github
+.husky
+examples
+scripts
+src
+tsconfig.json
+.prettierignore
