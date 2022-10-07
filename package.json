@@ -46,9 +46,6 @@
       "<rootDir>/src/**/__tests__/*.test.ts"
     ]
   },
-  "dependencies": {
-    "postgres": "^3.3.1"
-  },
   "devDependencies": {
     "@types/jest": "^29.1.2",
     "@types/node": "^16.11.59",
@@ -57,5 +54,13 @@
     "prettier": "^2.7.1",
     "ts-jest": "^29.0.3",
     "typescript": "^4.8.4"
+  },
+  "peerDependencies": {
+    "postgres": "^3.x"
+  },
+  "peerDependenciesMeta": {
+    "postgres": {
+      "optional": false
+    }
   }
 }
