@@ -20,6 +20,7 @@
   "license": "ISC",
   "author": "Eric Zingeler <eezing@gmail.com>",
   "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "bin": "bin.js",
   "scripts": {
     "build": "rm -rf dist && tsc --build",
