@@ -63,5 +63,8 @@
     "postgres": {
       "optional": false
     }
+  },
+  "engines": {
+    "node": ">=14"
   }
 }
