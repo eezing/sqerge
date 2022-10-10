@@ -10,6 +10,8 @@
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "outDir": "dist",
-    "rootDir": "src"
-  }
+    "rootDir": "src",
+    "declaration": true
+  },
+  "exclude": ["**/__tests__"]
 }

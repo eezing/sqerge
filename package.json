@@ -1,8 +1,26 @@
 {
   "name": "sqerge",
   "version": "1.0.0",
-  "private": true,
+  "description": "A forward only PostgreSQL migration tool.",
+  "keywords": [
+    "postgres",
+    "postgresql",
+    "sql",
+    "migrate",
+    "migration"
+  ],
+  "homepage": "https://github.com/eezing/sqerge#readme",
+  "bugs": {
+    "url": "https://github.com/eezing/sqerge/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/eezing/sqerge.git"
+  },
+  "license": "ISC",
+  "author": "Eric Zingeler <eezing@gmail.com>",
   "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "bin": "bin.js",
   "scripts": {
     "build": "rm -rf dist && tsc --build",
@@ -29,9 +47,6 @@
       "<rootDir>/src/**/__tests__/*.test.ts"
     ]
   },
-  "dependencies": {
-    "postgres": "^3.3.1"
-  },
   "devDependencies": {
     "@types/jest": "^29.1.2",
     "@types/node": "^16.11.59",
@@ -40,5 +55,16 @@
     "prettier": "^2.7.1",
     "ts-jest": "^29.0.3",
     "typescript": "^4.8.4"
+  },
+  "peerDependencies": {
+    "postgres": "^3.x"
+  },
+  "peerDependenciesMeta": {
+    "postgres": {
+      "optional": false
+    }
+  },
+  "engines": {
+    "node": ">=14 <=18"
   }
 }

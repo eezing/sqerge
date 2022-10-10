@@ -26,7 +26,7 @@ describe('execute migration', () => {
 
   test('examples/basic should create person table with 1 row', async () => {
     // Arrange
-    const command = `PGHOST=${PGHOST} PGPORT=${PGPORT} PGUSER=${PGUSER} PGPASSWORD=${PGPASSWORD} PGDATABASE=${PGDATABASE} sqerge ./examples/basic`;
+    const command = `PGHOST=${PGHOST} PGPORT=${PGPORT} PGUSER=${PGUSER} PGPASSWORD=${PGPASSWORD} PGDATABASE=${PGDATABASE} node bin.js ./examples/basic`;
 
     // Act
     const result = execSync(command).toString();
