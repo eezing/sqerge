@@ -1,9 +1,6 @@
 name: On Push
 
-on:
-  pull_request:
-    branches-ignore:
-      - main
+on: [pull_request]
 
 jobs:
   call-build-and-test:
