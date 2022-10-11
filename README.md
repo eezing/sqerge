@@ -4,64 +4,72 @@ A forward only PostgreSQL migration tool. Uses [Postgres.js](https://github.com/
 
 ## Get Started
 
-1.  Install to devDependencies
-    ```sh
-    npm i sqerge -D
-    ```
-2.  Choose a migration directory
-    ```sh
-    mkdir foo
-    ```
-3.  Create some migration files
+1. Install NPM package
 
-    The filename **prefix** represents the execution order, a unique integer followed by a hyphen. After the hyphen, it's all yours. Files not matching the prefix are ignored.
+   ```sh
+   npm i sqerge -D
+   ```
 
-    ```sql
-    -- file: ./foo/1-bar.sql
+2. Install Postgres.js (may install as peerDependency automatically on npm v7+)
 
-    CREATE TABLE person (
-      "id" SERIAL PRIMARY KEY,
-      "name" text NOT NULL
-    );
-    ```
+   ```sh
+   npm i postgres
+   ```
 
-    ```sql
-    -- file: ./foo/2-biz.sql
+3. Choose a migration directory
+   ```sh
+   mkdir foo
+   ```
+4. Create some migration files
 
-    ALTER TABLE person
-      ADD COLUMN "age" smallint;
-    ```
+   The filename **prefix** represents the execution order, a unique integer followed by a hyphen. After the hyphen, it's all yours. Files not matching the prefix are ignored.
 
-    In addition to **.sql**, migration files can also end in **.js** or **.mjs** for ES Modules. JavaScript files must **default export a function**. The 1st argument is a [Postgres.js](https://github.com/porsager/postgres) instance.
+   ```sql
+   -- file: ./foo/1-bar.sql
 
-    ```js
-    // file: ./foo/3-baz.js
+   CREATE TABLE person (
+     "id" SERIAL PRIMARY KEY,
+     "name" text NOT NULL
+   );
+   ```
 
-    module.exports = async (sql) => {
-      await sql`
-        INSERT INTO person
-          ("name", "age")
-        VALUES
-          ('Luke Skywalker', '21');
-      `;
-    };
-    ```
+   ```sql
+   -- file: ./foo/2-biz.sql
 
-4.  Execute migration
+   ALTER TABLE person
+     ADD COLUMN "age" smallint;
+   ```
 
-    Command:
+   In addition to **.sql**, migration files can also end in **.js** or **.mjs** for ES Modules. JavaScript files must **default export a function**. The 1st argument is a [Postgres.js](https://github.com/porsager/postgres) instance.
 
-    **Note:** Use [environment variables](https://www.postgresql.org/docs/current/libpq-envars.html) for your database connection. Supported environment variables are at the discretion of [Postgres.js](https://github.com/porsager/postgres).
+   ```js
+   // file: ./foo/3-baz.js
 
-    ```sh
-    PGHOST=localhost PGPORT=5438 PGUSER=jonathan PGPASSWORD=iliketurtles PGDATABASE=dev npx sqerge ./foo
-    ```
+   module.exports = async (sql) => {
+     await sql`
+       INSERT INTO person
+         ("name", "age")
+       VALUES
+         ('Luke Skywalker', '21');
+     `;
+   };
+   ```
 
-    Output:
+5. Execute migration
 
-    ```sh
-    [sqerge] 3 file(s) found in '/Users/jonathan/Desktop/foo'
-    [sqerge] file 1 (1-bar.sql): executed
-    [sqerge] file 2 (2-biz.sql): executed
-    [sqerge] file 3 (3-baz.js): executed
-    ```
+   Command:
+
+   **Note:** Use [environment variables](https://www.postgresql.org/docs/current/libpq-envars.html) for your database connection. Supported environment variables are at the discretion of [Postgres.js](https://github.com/porsager/postgres).
+
+   ```sh
+   PGHOST=localhost PGPORT=5438 PGUSER=jonathan PGPASSWORD=iliketurtles PGDATABASE=dev npx sqerge ./foo
+   ```
+
+   Output:
+
+   ```sh
+   [sqerge] 3 file(s) found in '/Users/jonathan/Desktop/foo'
+   [sqerge] file 1 (1-bar.sql): executed
+   [sqerge] file 2 (2-biz.sql): executed
+   [sqerge] file 3 (3-baz.js): executed
+   ```
