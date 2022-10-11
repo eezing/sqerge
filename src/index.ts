@@ -88,7 +88,7 @@ export class SqergeError extends Error {
 }
 
 function getFileList(dir: string): { prefix: number; file: string }[] {
-  const filePattern = /^(\d+)-.*[.](sql|js)$/;
+  const filePattern = /^(\d+)-.*[.](sql|js|mjs)$/;
 
   try {
     return readdirSync(dir)
