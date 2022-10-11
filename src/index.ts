@@ -70,6 +70,8 @@ export default async function migrate(
               'sql_error',
               fileMessage(count, file, `(sql execution) ${error.message}`)
             );
+          } else {
+            throw error;
           }
         }
 
