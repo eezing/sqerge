@@ -32,9 +32,10 @@ describe('bin.js', () => {
     const result = execSync(command).toString();
 
     // Assert
-    expect(result.match(/executed/g)?.length).toBe(3);
+    expect(result.match(/executed/g)?.length).toBe(4);
     expect(await sql`select * from person;`).toEqual([
       { id: 1, name: 'Luke Skywalker', age: 21 },
+      { id: 2, name: 'Han Solo', age: 25 },
     ]);
   });
 
