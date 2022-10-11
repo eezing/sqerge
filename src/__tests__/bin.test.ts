@@ -7,7 +7,7 @@ const PGUSER = 'jonathan';
 const PGPASSWORD = 'iliketurtles';
 const PGDATABASE = 'dev';
 
-describe('execute migration', () => {
+describe('bin.js', () => {
   let sql: Sql<{}>;
 
   beforeEach(() => {
@@ -24,9 +24,9 @@ describe('execute migration', () => {
 
   afterEach(() => sql.end());
 
-  test('examples/basic should create person table with 1 row', async () => {
+  test('test-1: should create person table with 1 row', async () => {
     // Arrange
-    const command = `PGHOST=${PGHOST} PGPORT=${PGPORT} PGUSER=${PGUSER} PGPASSWORD=${PGPASSWORD} PGDATABASE=${PGDATABASE} node bin.js ./examples/basic`;
+    const command = `PGHOST=${PGHOST} PGPORT=${PGPORT} PGUSER=${PGUSER} PGPASSWORD=${PGPASSWORD} PGDATABASE=${PGDATABASE} node bin.js ./src/__tests__/bin/test-1`;
 
     // Act
     const result = execSync(command).toString();
@@ -36,5 +36,24 @@ describe('execute migration', () => {
     expect(await sql`select * from person;`).toEqual([
       { id: 1, name: 'Luke Skywalker', age: 21 },
     ]);
+  });
+
+  test('test-2: should rollback on bad table name in sql file insert statement', async () => {
+    // Arrange
+    const command = `PGHOST=${PGHOST} PGPORT=${PGPORT} PGUSER=${PGUSER} PGPASSWORD=${PGPASSWORD} PGDATABASE=${PGDATABASE} node bin.js ./src/__tests__/bin/test-2`;
+
+    // Act
+    try {
+      execSync(command).toString();
+    } catch (error: any) {
+      var result = error.stdout.toString();
+    }
+
+    // Assert
+    expect(result).toContain('rollback...');
+    expect(result).toContain('relation "people" does not exist');
+    expect(
+      await sql`SELECT * FROM information_schema.tables where "table_name" = 'person';`
+    ).toEqual([]);
   });
 });
