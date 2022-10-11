@@ -10,7 +10,7 @@ A forward only PostgreSQL migration tool. Uses [Postgres.js](https://github.com/
    npm i sqerge -D
    ```
 
-2. Install Postgres.js (may install as peerDependency automatically on npm v7+)
+2. Install Postgres.js (may install as peerDependency automatically on NPM v7+)
 
    ```sh
    npm i postgres
