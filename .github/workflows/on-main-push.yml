@@ -1,7 +1,7 @@
-name: On Pull Request
+name: On Main Push
 
 on:
-  pull_request:
+  push:
     branches:
       - main
 

@@ -1,0 +1,11 @@
+name: On Feature Push
+
+on:
+  push:
+    branches-ignore:
+      - main
+
+jobs:
+  call-build-and-test:
+    name: Build and Test
+    uses: ./.github/workflows/build-and-test.yml
