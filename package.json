@@ -1,6 +1,6 @@
 {
   "name": "sqerge",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "A forward only PostgreSQL migration tool.",
   "keywords": [
     "postgres",
