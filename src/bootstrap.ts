@@ -25,7 +25,7 @@ export default async function bootstrap() {
 
     await migrate(sql, dir, log);
 
-    process.exit(0);
+    await sql.end();
   } catch (error) {
     if (isNodeError(error, Error)) {
       if (error instanceof SqergeError || error instanceof PostgresError) {
