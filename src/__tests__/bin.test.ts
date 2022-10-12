@@ -1,4 +1,5 @@
 import { execSync } from 'child_process';
+import { stripVTControlCharacters as stripVt } from 'node:util';
 import postgres, { Sql } from 'postgres';
 
 const PGHOST = 'localhost';
@@ -96,8 +97,10 @@ describe('./test-2', () => {
     }
 
     // Assert
-    expect(result).toContain('rollback...');
-    expect(result).toContain('relation "people" does not exist');
+    expect(stripVt(result)).toContain('[sqerge] rollback...');
+    expect(stripVt(result)).toContain(
+      '[sqerge] (error) file 2 (2-schema.sql): (sql execution) relation "people" does not exist'
+    );
     expect(
       await sql`SELECT * FROM information_schema.tables where "table_name" = 'person';`
     ).toEqual([]);
@@ -117,5 +120,28 @@ describe('./test-3', () => {
     expect(await sql`select * from person;`).toEqual([
       { id: 1, name: 'Luke Skywalker', age: 21 },
     ]);
+  });
+});
+
+describe('./test-4', () => {
+  test('Should rollback and error when files have duplicate prefix', async () => {
+    // Arrange
+    const command = `PGHOST=${PGHOST} PGPORT=${PGPORT} PGUSER=${PGUSER} PGPASSWORD=${PGPASSWORD} PGDATABASE=${PGDATABASE} node bin.js ./src/__tests__/bin/test-4`;
+
+    // Act
+    try {
+      execSync(command).toString();
+    } catch (error: any) {
+      var result = error.stdout.toString();
+    }
+
+    // Assert
+    expect(stripVt(result)).toContain('[sqerge] rollback...');
+    expect(stripVt(result)).toContain(
+      '[sqerge] (error) file 2 (1-schema-B.sql): prefix (1) in filename is already in use'
+    );
+    expect(
+      await sql`SELECT * FROM information_schema.tables where "table_name" = 'person';`
+    ).toEqual([]);
   });
 });
