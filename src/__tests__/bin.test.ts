@@ -24,7 +24,7 @@ describe('bin.js', () => {
 
   afterEach(() => sql.end());
 
-  test('test-1: should create person table with 1 row', async () => {
+  test('test-1: Should create person table with 1 row', async () => {
     // Arrange
     const command = `PGHOST=${PGHOST} PGPORT=${PGPORT} PGUSER=${PGUSER} PGPASSWORD=${PGPASSWORD} PGDATABASE=${PGDATABASE} node bin.js ./src/__tests__/bin/test-1`;
 
@@ -39,7 +39,7 @@ describe('bin.js', () => {
     ]);
   });
 
-  test('test-2: should rollback on bad table name in sql file insert statement', async () => {
+  test('test-2: Should rollback on bad table name in sql file insert statement', async () => {
     // Arrange
     const command = `PGHOST=${PGHOST} PGPORT=${PGPORT} PGUSER=${PGUSER} PGPASSWORD=${PGPASSWORD} PGDATABASE=${PGDATABASE} node bin.js ./src/__tests__/bin/test-2`;
 
@@ -56,5 +56,19 @@ describe('bin.js', () => {
     expect(
       await sql`SELECT * FROM information_schema.tables where "table_name" = 'person';`
     ).toEqual([]);
+  });
+
+  test('test-3: Should create person table with 1 row when non-sequential prefix in filenames', async () => {
+    // Arrange
+    const command = `PGHOST=${PGHOST} PGPORT=${PGPORT} PGUSER=${PGUSER} PGPASSWORD=${PGPASSWORD} PGDATABASE=${PGDATABASE} node bin.js ./src/__tests__/bin/test-3`;
+
+    // Act
+    const result = execSync(command).toString();
+
+    // Assert
+    expect(result.match(/executed/g)?.length).toBe(3);
+    expect(await sql`select * from person;`).toEqual([
+      { id: 1, name: 'Luke Skywalker', age: 21 },
+    ]);
   });
 });
