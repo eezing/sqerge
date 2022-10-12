@@ -7,7 +7,8 @@
     "postgresql",
     "sql",
     "migrate",
-    "migration"
+    "migration",
+    "schema"
   ],
   "homepage": "https://github.com/eezing/sqerge#readme",
   "bugs": {
