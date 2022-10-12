@@ -1,7 +1,18 @@
 import { execSync } from 'child_process';
 import { rmSync, writeFileSync } from 'fs';
-import { stripVTControlCharacters as stripVt } from 'node:util';
 import postgres, { Sql } from 'postgres';
+
+const stripColor = (value: string) =>
+  value.replace(
+    new RegExp(
+      [
+        '[\\u001B\\u009B][[\\]()#;?]*(?:(?:(?:(?:;[-a-zA-Z\\d\\/#&.:=?%@~_]+)*|[a-zA-Z\\d]+(?:;[-a-zA-Z\\d\\/#&.:=?%@~_]*)*)?\\u0007)',
+        '(?:(?:\\d{1,4}(?:;\\d{0,4})*)?[\\dA-PR-TZcf-nq-uy=><~]))',
+      ].join('|'),
+      'g'
+    ),
+    ''
+  );
 
 const PGHOST = 'localhost';
 const PGPORT = 5438;
@@ -133,8 +144,8 @@ describe('./test-2', () => {
     }
 
     // Assert
-    expect(stripVt(result)).toContain('[sqerge] rollback...');
-    expect(stripVt(result)).toContain(
+    expect(stripColor(result)).toContain('[sqerge] rollback...');
+    expect(stripColor(result)).toContain(
       '[sqerge] (error) file 2 (2-schema.sql): (sql execution) relation "people" does not exist'
     );
     expect(
@@ -172,8 +183,8 @@ describe('./test-4', () => {
     }
 
     // Assert
-    expect(stripVt(result)).toContain('[sqerge] rollback...');
-    expect(stripVt(result)).toContain(
+    expect(stripColor(result)).toContain('[sqerge] rollback...');
+    expect(stripColor(result)).toContain(
       '[sqerge] (error) file 2 (1-schema-B.sql): prefix (1) in filename is already in use'
     );
     expect(
