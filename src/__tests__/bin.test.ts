@@ -105,7 +105,7 @@ describe('./test-2', () => {
 });
 
 describe('./test-3', () => {
-  test('test-3: Should create person table with 1 row when non-sequential prefix in filenames', async () => {
+  test('Should create person table with 1 row when non-sequential prefix in filenames', async () => {
     // Arrange
     const command = `PGHOST=${PGHOST} PGPORT=${PGPORT} PGUSER=${PGUSER} PGPASSWORD=${PGPASSWORD} PGDATABASE=${PGDATABASE} node bin.js ./src/__tests__/bin/test-3`;
 
