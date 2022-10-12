@@ -1,5 +1,18 @@
 import { execSync } from 'child_process';
+import { rmSync, writeFileSync } from 'fs';
 import postgres, { Sql } from 'postgres';
+
+const stripColor = (value: string) =>
+  value.replace(
+    new RegExp(
+      [
+        '[\\u001B\\u009B][[\\]()#;?]*(?:(?:(?:(?:;[-a-zA-Z\\d\\/#&.:=?%@~_]+)*|[a-zA-Z\\d]+(?:;[-a-zA-Z\\d\\/#&.:=?%@~_]*)*)?\\u0007)',
+        '(?:(?:\\d{1,4}(?:;\\d{0,4})*)?[\\dA-PR-TZcf-nq-uy=><~]))',
+      ].join('|'),
+      'g'
+    ),
+    ''
+  );
 
 const PGHOST = 'localhost';
 const PGPORT = 5438;
@@ -42,6 +55,10 @@ afterEach(() => sql.end());
 afterAll(() => admin.end());
 
 describe('./test-1', () => {
+  beforeAll(() => {
+    rmSync('./src/__tests__/bin/test-1/5-data.sql', { force: true });
+  });
+
   test('Should create person table with 1 row', async () => {
     // Arrange
     const command = `PGHOST=${PGHOST} PGPORT=${PGPORT} PGUSER=${PGUSER} PGPASSWORD=${PGPASSWORD} PGDATABASE=${PGDATABASE} node bin.js ./src/__tests__/bin/test-1`;
@@ -81,6 +98,37 @@ describe('./test-1', () => {
       { id: 2, name: 'Han Solo', age: 25 },
     ]);
   });
+
+  test('Second run with new file should execute new file', async () => {
+    // Arrange
+    const command = `PGHOST=${PGHOST} PGPORT=${PGPORT} PGUSER=${PGUSER} PGPASSWORD=${PGPASSWORD} PGDATABASE=${PGDATABASE} node bin.js ./src/__tests__/bin/test-1`;
+
+    // Act (run 1)
+    const run1 = execSync(command).toString();
+
+    // Assert (run 1)
+    expect(run1.match(/executed/g)?.length).toBe(4);
+    expect(await sql`select * from person;`).toEqual([
+      { id: 1, name: 'Luke Skywalker', age: 21 },
+      { id: 2, name: 'Han Solo', age: 25 },
+    ]);
+
+    // Act (run 2)
+    writeFileSync(
+      './src/__tests__/bin/test-1/5-data.sql',
+      `INSERT INTO person ("name", "age") VALUES ('C3PO', '100');`
+    );
+    const run2 = execSync(command).toString();
+
+    // Assert (run 2)
+    expect(run2.match(/already migrated/g)?.length).toBe(4);
+    expect(run2.match(/executed/g)?.length).toBe(1);
+    expect(await sql`select * from person;`).toEqual([
+      { id: 1, name: 'Luke Skywalker', age: 21 },
+      { id: 2, name: 'Han Solo', age: 25 },
+      { id: 3, name: 'C3PO', age: 100 },
+    ]);
+  });
 });
 
 describe('./test-2', () => {
@@ -96,8 +144,10 @@ describe('./test-2', () => {
     }
 
     // Assert
-    expect(result).toContain('rollback...');
-    expect(result).toContain('relation "people" does not exist');
+    expect(stripColor(result)).toContain('[sqerge] rollback...');
+    expect(stripColor(result)).toContain(
+      '[sqerge] (error) file 2 (2-schema.sql): (sql execution) relation "people" does not exist'
+    );
     expect(
       await sql`SELECT * FROM information_schema.tables where "table_name" = 'person';`
     ).toEqual([]);
@@ -105,7 +155,7 @@ describe('./test-2', () => {
 });
 
 describe('./test-3', () => {
-  test('test-3: Should create person table with 1 row when non-sequential prefix in filenames', async () => {
+  test('Should create person table with 1 row when non-sequential prefix in filenames', async () => {
     // Arrange
     const command = `PGHOST=${PGHOST} PGPORT=${PGPORT} PGUSER=${PGUSER} PGPASSWORD=${PGPASSWORD} PGDATABASE=${PGDATABASE} node bin.js ./src/__tests__/bin/test-3`;
 
@@ -117,5 +167,28 @@ describe('./test-3', () => {
     expect(await sql`select * from person;`).toEqual([
       { id: 1, name: 'Luke Skywalker', age: 21 },
     ]);
+  });
+});
+
+describe('./test-4', () => {
+  test('Should rollback and error when files have duplicate prefix', async () => {
+    // Arrange
+    const command = `PGHOST=${PGHOST} PGPORT=${PGPORT} PGUSER=${PGUSER} PGPASSWORD=${PGPASSWORD} PGDATABASE=${PGDATABASE} node bin.js ./src/__tests__/bin/test-4`;
+
+    // Act
+    try {
+      execSync(command).toString();
+    } catch (error: any) {
+      var result = error.stdout.toString();
+    }
+
+    // Assert
+    expect(stripColor(result)).toContain('[sqerge] rollback...');
+    expect(stripColor(result)).toContain(
+      '[sqerge] (error) file 2 (1-schema-B.sql): prefix (1) in filename is already in use'
+    );
+    expect(
+      await sql`SELECT * FROM information_schema.tables where "table_name" = 'person';`
+    ).toEqual([]);
   });
 });

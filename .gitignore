@@ -9,3 +9,4 @@ pids
 node_modules/
 *.env
 dist
+src/__tests__/bin/test-1/5-data.sql
