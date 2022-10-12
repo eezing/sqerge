@@ -1,4 +1,5 @@
 import { execSync } from 'child_process';
+import { rmSync, writeFileSync } from 'fs';
 import { stripVTControlCharacters as stripVt } from 'node:util';
 import postgres, { Sql } from 'postgres';
 
@@ -43,6 +44,10 @@ afterEach(() => sql.end());
 afterAll(() => admin.end());
 
 describe('./test-1', () => {
+  beforeAll(() => {
+    rmSync('./src/__tests__/bin/test-1/5-data.sql', { force: true });
+  });
+
   test('Should create person table with 1 row', async () => {
     // Arrange
     const command = `PGHOST=${PGHOST} PGPORT=${PGPORT} PGUSER=${PGUSER} PGPASSWORD=${PGPASSWORD} PGDATABASE=${PGDATABASE} node bin.js ./src/__tests__/bin/test-1`;
@@ -80,6 +85,37 @@ describe('./test-1', () => {
     expect(await sql`select * from person;`).toEqual([
       { id: 1, name: 'Luke Skywalker', age: 21 },
       { id: 2, name: 'Han Solo', age: 25 },
+    ]);
+  });
+
+  test('Second run with new file should execute new file', async () => {
+    // Arrange
+    const command = `PGHOST=${PGHOST} PGPORT=${PGPORT} PGUSER=${PGUSER} PGPASSWORD=${PGPASSWORD} PGDATABASE=${PGDATABASE} node bin.js ./src/__tests__/bin/test-1`;
+
+    // Act (run 1)
+    const run1 = execSync(command).toString();
+
+    // Assert (run 1)
+    expect(run1.match(/executed/g)?.length).toBe(4);
+    expect(await sql`select * from person;`).toEqual([
+      { id: 1, name: 'Luke Skywalker', age: 21 },
+      { id: 2, name: 'Han Solo', age: 25 },
+    ]);
+
+    // Act (run 2)
+    writeFileSync(
+      './src/__tests__/bin/test-1/5-data.sql',
+      `INSERT INTO person ("name", "age") VALUES ('C3PO', '100');`
+    );
+    const run2 = execSync(command).toString();
+
+    // Assert (run 2)
+    expect(run2.match(/already migrated/g)?.length).toBe(4);
+    expect(run2.match(/executed/g)?.length).toBe(1);
+    expect(await sql`select * from person;`).toEqual([
+      { id: 1, name: 'Luke Skywalker', age: 21 },
+      { id: 2, name: 'Han Solo', age: 25 },
+      { id: 3, name: 'C3PO', age: 100 },
     ]);
   });
 });
