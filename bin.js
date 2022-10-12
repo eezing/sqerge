@@ -1,2 +1,2 @@
 #!/usr/bin/env node
-require('./dist/bootstrap.js');
+require('./dist/bootstrap.js').default();

@@ -2,7 +2,7 @@ import { resolve as pathResolve } from 'node:path';
 import postgres, { PostgresError } from 'postgres';
 import migrate, { SqergeError } from './index';
 
-(async function main() {
+export default async function bootstrap() {
   const log: typeof console.log = (message, ...args) =>
     console.log(
       `\u001b[35m[\u001b[39m\u001b[36msqerge\u001b[39m\u001b[35m]\u001b[39m ${message}`,
@@ -49,7 +49,7 @@ import migrate, { SqergeError } from './index';
 
     process.exit(1);
   }
-})();
+}
 
 function isNodeError<T extends new (...args: any) => Error>(
   value: unknown,
