@@ -1,13 +1,14 @@
 {
   "name": "sqerge",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "A forward only PostgreSQL migration tool.",
   "keywords": [
     "postgres",
     "postgresql",
     "sql",
     "migrate",
-    "migration"
+    "migration",
+    "schema"
   ],
   "homepage": "https://github.com/eezing/sqerge#readme",
   "bugs": {
