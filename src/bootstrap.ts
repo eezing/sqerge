@@ -23,7 +23,7 @@ export default async function bootstrap() {
       await sql.end();
     });
 
-    await migrate(sql, dir, log);
+    await migrate(sql, dir, { log, role: process.env.ROLE });
 
     await sql.end();
   } catch (error) {

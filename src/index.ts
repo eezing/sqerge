@@ -6,13 +6,19 @@ import { PostgresError, Sql } from 'postgres';
 export default async function migrate(
   sql: Sql<{}>,
   fileDir: string,
-  log?: typeof console.log
+  options?: { role?: string; log?: typeof console.log }
 ) {
+  const log = options?.log;
+
   const fileList = getFileList(fileDir);
   log && log('%O file(s) found in %O', fileList.length, fileDir);
   if (fileList.length === 0) return;
 
   await sql.begin(async (sql) => {
+    if (typeof options?.role === 'string') {
+      await sql`set role ${sql(options.role)};`;
+    }
+
     await createMigrationTable(sql);
     const migrationList = await getMigrations(sql);
 

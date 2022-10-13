@@ -192,3 +192,24 @@ describe('./test-4', () => {
     ).toEqual([]);
   });
 });
+
+describe('./test-5', () => {
+  test('Should have 2 tables owned by custom role if env.ROLE is defined', async () => {
+    // Arrange
+    const role = 'foobar';
+    await sql`drop role if exists ${sql(role)}`;
+    await sql`create role ${sql(role)} with superuser;`;
+    const command = `PGHOST=${PGHOST} PGPORT=${PGPORT} PGUSER=${PGUSER} PGPASSWORD=${PGPASSWORD} PGDATABASE=${PGDATABASE} ROLE=${role} node bin.js ./src/__tests__/bin/test-5`;
+
+    // Act
+    const result = execSync(command).toString();
+
+    // Assert
+    expect(result.match(/executed/g)?.length).toBe(2);
+    expect(
+      (
+        await sql`select from pg_tables where tableowner = ${role} and tablename in ('person', 'friend');`
+      ).length
+    ).toBe(2);
+  });
+});
