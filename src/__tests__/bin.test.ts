@@ -24,8 +24,6 @@ let admin: Sql<{}>;
 let sql: Sql<{}>;
 
 beforeAll(() => {
-  execSync('npm run dev:postgres');
-
   admin = postgres({
     host: PGHOST,
     port: PGPORT,
