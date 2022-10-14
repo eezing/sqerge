@@ -35,6 +35,7 @@ beforeAll(() => {
 });
 
 beforeEach(async () => {
+  sql && (await sql.end());
   await admin`drop database if exists ${admin(PGDATABASE)};`;
   await admin`create database ${admin(PGDATABASE)};`;
 
@@ -48,9 +49,10 @@ beforeEach(async () => {
   });
 });
 
-afterEach(() => sql.end());
-
-afterAll(() => admin.end());
+afterAll(() => {
+  admin.end();
+  sql.end();
+});
 
 describe('./test-1', () => {
   beforeAll(() => {
