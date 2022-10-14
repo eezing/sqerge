@@ -59,8 +59,6 @@ A forward only PostgreSQL migration tool. Uses [Postgres.js](https://github.com/
 
    Command:
 
-   **Note:** Use [environment variables](https://www.postgresql.org/docs/current/libpq-envars.html) for your database connection. Supported environment variables are at the discretion of [Postgres.js](https://github.com/porsager/postgres).
-
    ```sh
    PGHOST=localhost PGPORT=5438 PGUSER=jonathan PGPASSWORD=iliketurtles PGDATABASE=dev npx sqerge ./foo
    ```
@@ -73,3 +71,11 @@ A forward only PostgreSQL migration tool. Uses [Postgres.js](https://github.com/
    [sqerge] file 2 (2-biz.sql): executed
    [sqerge] file 3 (3-baz.js): executed
    ```
+
+## Environment Variables
+
+- Use **Postgres.js** [environment variables](https://github.com/porsager/postgres#environmental-variables) for your database **connection**.
+
+- **ROLE** (optional)
+
+  Execute migration with the specified database role. This is helpful for when your `LOGIN` role has a `NOINHERIT` membership to another role containting privileges required for your migration. If ROLE is provided, sqerge will execute `SET ROLE` for the session and then execute your migration files.
