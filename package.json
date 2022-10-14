@@ -1,6 +1,6 @@
 {
   "name": "sqerge",
-  "version": "1.1.0",
+  "version": "2.0.0",
   "description": "A forward only PostgreSQL migration tool.",
   "keywords": [
     "postgres",
@@ -26,7 +26,7 @@
   "scripts": {
     "build": "rm -rf dist && tsc --build",
     "dev": "tsc -w",
-    "dev:postgres": "node ./scripts/dev-postgres.js",
+    "dev:postgres": "PGHOST=localhost PGPORT=5438 PGUSER=jonathan PGPASSWORD=iliketurtles PGDATABASE=dev NAME=sqerge RESET=true TAG=14 pglocal",
     "prepare": "husky install",
     "test": "npm run test:prettier && npm run test:jest",
     "test:jest": "jest",
@@ -49,6 +49,7 @@
     ]
   },
   "devDependencies": {
+    "@eezing/pglocal": "^1.0.8",
     "@types/jest": "^29.1.2",
     "@types/node": "^16.11.59",
     "husky": "^8.0.0",
