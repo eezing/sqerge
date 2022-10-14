@@ -49,7 +49,7 @@
     ]
   },
   "devDependencies": {
-    "@eezing/pglocal": "^1.0.6",
+    "@eezing/pglocal": "^1.0.8",
     "@types/jest": "^29.1.2",
     "@types/node": "^16.11.59",
     "husky": "^8.0.0",
