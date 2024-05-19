@@ -6,7 +6,7 @@ import { PostgresError, Sql } from 'postgres';
 export default async function migrate(
   sql: Sql<{}>,
   fileDir: string,
-  options?: { role?: string; log?: typeof console.log }
+  options?: { role?: string; log?: typeof console.log },
 ) {
   const log = options?.log;
 
@@ -36,8 +36,8 @@ export default async function migrate(
               count,
               file,
               'filename does not match %O in migration history',
-              row.file
-            )
+              row.file,
+            ),
           );
         }
 
@@ -67,14 +67,14 @@ export default async function migrate(
                   count,
                   file,
                   'prefix (%O) in filename is already in use',
-                  prefix
-                )
+                  prefix,
+                ),
               );
             }
 
             throw new SqergeError(
               'sql_error',
-              fileMessage(count, file, `(sql execution) ${error.message}`)
+              fileMessage(count, file, `(sql execution) ${error.message}`),
             );
           } else {
             throw error;
@@ -88,7 +88,11 @@ export default async function migrate(
 }
 
 export class SqergeError extends Error {
-  constructor(public code: string, message: string, ...args: any) {
+  constructor(
+    public code: string,
+    message: string,
+    ...args: any
+  ) {
     super(formatWithOptions({ colors: true }, message, ...args));
   }
 }
@@ -147,7 +151,7 @@ async function executeJsMigrationFile(sql: Sql<{}>, filePath: string) {
     throw new SqergeError(
       'invalid_js_migration_file',
       'file %O default export must be a function',
-      filePath
+      filePath,
     );
   }
 }
@@ -162,6 +166,6 @@ function fileMessage(
     { colors: true },
     `file %O (\u001b[32m${file}\u001b[39m): ${message}`,
     count,
-    ...args
+    ...args,
   );
 }
