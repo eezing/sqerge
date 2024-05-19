@@ -9,9 +9,9 @@ const stripColor = (value: string) =>
         '[\\u001B\\u009B][[\\]()#;?]*(?:(?:(?:(?:;[-a-zA-Z\\d\\/#&.:=?%@~_]+)*|[a-zA-Z\\d]+(?:;[-a-zA-Z\\d\\/#&.:=?%@~_]*)*)?\\u0007)',
         '(?:(?:\\d{1,4}(?:;\\d{0,4})*)?[\\dA-PR-TZcf-nq-uy=><~]))',
       ].join('|'),
-      'g'
+      'g',
     ),
-    ''
+    '',
   );
 
 const PGHOST = 'localhost';
@@ -116,7 +116,7 @@ describe('./test-1', () => {
     // Act (run 2)
     writeFileSync(
       './src/__tests__/bin/test-1/5-data.sql',
-      `INSERT INTO person ("name", "age") VALUES ('C3PO', '100');`
+      `INSERT INTO person ("name", "age") VALUES ('C3PO', '100');`,
     );
     const run2 = execSync(command).toString();
 
@@ -146,10 +146,10 @@ describe('./test-2', () => {
     // Assert
     expect(stripColor(result)).toContain('[sqerge] rollback...');
     expect(stripColor(result)).toContain(
-      '[sqerge] (error) file 2 (2-schema.sql): (sql execution) relation "people" does not exist'
+      '[sqerge] (error) file 2 (2-schema.sql): (sql execution) relation "people" does not exist',
     );
     expect(
-      await sql`SELECT * FROM information_schema.tables where "table_name" = 'person';`
+      await sql`SELECT * FROM information_schema.tables where "table_name" = 'person';`,
     ).toEqual([]);
   });
 });
@@ -185,10 +185,10 @@ describe('./test-4', () => {
     // Assert
     expect(stripColor(result)).toContain('[sqerge] rollback...');
     expect(stripColor(result)).toContain(
-      '[sqerge] (error) file 2 (1-schema-B.sql): prefix (1) in filename is already in use'
+      '[sqerge] (error) file 2 (1-schema-B.sql): prefix (1) in filename is already in use',
     );
     expect(
-      await sql`SELECT * FROM information_schema.tables where "table_name" = 'person';`
+      await sql`SELECT * FROM information_schema.tables where "table_name" = 'person';`,
     ).toEqual([]);
   });
 });
@@ -209,7 +209,7 @@ describe('./test-5', () => {
     expect(
       (
         await sql`select from pg_tables where tableowner = ${role} and tablename in ('person', 'friend');`
-      ).length
+      ).length,
     ).toBe(2);
   });
 });
