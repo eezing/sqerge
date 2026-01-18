@@ -1,7 +1,9 @@
+.claude
 .github
 .husky
 examples
 scripts
 src
 tsconfig.json
+tsconfig.tsbuildinfo
 .prettierignore
