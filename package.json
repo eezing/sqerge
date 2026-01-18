@@ -1,6 +1,6 @@
 {
   "name": "sqerge",
-  "version": "3.1.0",
+  "version": "3.1.1",
   "description": "A forward only PostgreSQL migration tool.",
   "keywords": [
     "postgres",
@@ -67,6 +67,6 @@
     }
   },
   "engines": {
-    "node": ">=16"
+    "node": ">=18"
   }
 }
