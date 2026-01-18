@@ -1,6 +1,6 @@
 {
   "name": "sqerge",
-  "version": "3.1.1",
+  "version": "3.1.2",
   "description": "A forward only PostgreSQL migration tool.",
   "keywords": [
     "postgres",
@@ -22,7 +22,9 @@
   "author": "Eric Zingeler <eezing@gmail.com>",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
-  "bin": "bin.js",
+  "bin": {
+    "sqerge": "bin.js"
+  },
   "scripts": {
     "build": "rm -rf dist && tsc --build",
     "dev": "tsc -w",
