@@ -4,7 +4,7 @@ import { formatWithOptions } from 'node:util';
 import { PostgresError, Sql } from 'postgres';
 
 export default async function migrate(
-  sql: Sql<{}>,
+  sql: Sql,
   fileDir: string,
   options?: { role?: string; log?: typeof console.log },
 ) {
@@ -14,7 +14,10 @@ export default async function migrate(
   log && log('%O file(s) found in %O', fileList.length, fileDir);
   if (fileList.length === 0) return;
 
-  await sql.begin(async (sql) => {
+  await sql.begin(async (trx) => {
+    // TypeScript workaround for https://github.com/porsager/postgres/issues/1143
+    const sql = trx as unknown as Sql;
+
     if (typeof options?.role === 'string') {
       await sql`set role ${sql(options.role)};`;
     }
@@ -114,7 +117,7 @@ function getFileList(dir: string): { prefix: number; file: string }[] {
   }
 }
 
-function createMigrationTable(sql: Sql<{}>) {
+function createMigrationTable(sql: Sql) {
   return sql`
     CREATE TABLE IF NOT EXISTS sqerge_migration (
       id SERIAL NOT NULL PRIMARY KEY,
@@ -125,24 +128,17 @@ function createMigrationTable(sql: Sql<{}>) {
   `;
 }
 
-function getMigrations(sql: Sql<{}>) {
-  return sql<
-    {
-      id: string;
-      prefix: number;
-      file: string;
-      createdAt: string;
-    }[]
-  >`
+function getMigrations(sql: Sql) {
+  return sql`
     SELECT * FROM sqerge_migration ORDER BY "id";
   `;
 }
 
-function insertMigration(sql: Sql<{}>, prefix: number, file: string) {
+function insertMigration(sql: Sql, prefix: number, file: string) {
   return sql`INSERT INTO sqerge_migration ("prefix", "file") VALUES (${prefix}, ${file});`;
 }
 
-async function executeJsMigrationFile(sql: Sql<{}>, filePath: string) {
+async function executeJsMigrationFile(sql: Sql, filePath: string) {
   const module = await import(filePath);
 
   if (typeof module.default === 'function') {
