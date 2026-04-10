@@ -140,12 +140,13 @@ describe('./test-2', () => {
     try {
       execSync(command).toString();
     } catch (error: any) {
-      var result = error.stdout.toString();
+      var stdout = error.stdout.toString();
+      var stderr = error.stderr.toString();
     }
 
     // Assert
-    expect(stripColor(result)).toContain('[sqerge] rollback...');
-    expect(stripColor(result)).toContain(
+    expect(stripColor(stdout)).toContain('[sqerge] rollback...');
+    expect(stripColor(stderr)).toContain(
       '[sqerge] (error) file 2 (2-schema.sql): (sql execution) relation "people" does not exist',
     );
     expect(
@@ -179,12 +180,13 @@ describe('./test-4', () => {
     try {
       execSync(command).toString();
     } catch (error: any) {
-      var result = error.stdout.toString();
+      var stdout = error.stdout.toString();
+      var stderr = error.stderr.toString();
     }
 
     // Assert
-    expect(stripColor(result)).toContain('[sqerge] rollback...');
-    expect(stripColor(result)).toContain(
+    expect(stripColor(stdout)).toContain('[sqerge] rollback...');
+    expect(stripColor(stderr)).toContain(
       '[sqerge] (error) file 2 (1-schema-B.sql): prefix (1) in filename is already in use',
     );
     expect(

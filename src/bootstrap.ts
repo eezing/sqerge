@@ -10,7 +10,10 @@ export default async function bootstrap() {
     );
 
   const logError: typeof console.log = (message, ...args) =>
-    log(`\u001b[1m\u001b[31m(error)\u001b[39m\u001b[22m ${message}`, ...args);
+    console.error(
+      `\u001b[35m[\u001b[39m\u001b[36msqerge\u001b[39m\u001b[35m]\u001b[39m \u001b[1m\u001b[31m(error)\u001b[39m\u001b[22m ${message}`,
+      ...args,
+    );
 
   try {
     const dir = pathResolve(process.argv[2] ?? './');
