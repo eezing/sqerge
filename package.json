@@ -1,6 +1,6 @@
 {
   "name": "sqerge",
-  "version": "3.2.0",
+  "version": "3.3.0",
   "description": "A forward only PostgreSQL migration tool.",
   "keywords": [
     "postgres",
@@ -61,7 +61,7 @@
     "typescript": "^5.4.5"
   },
   "peerDependencies": {
-    "postgres": "^3.x"
+    "postgres": "^3.4.0"
   },
   "peerDependenciesMeta": {
     "postgres": {
@@ -69,6 +69,6 @@
     }
   },
   "engines": {
-    "node": ">=20"
+    "node": ">=22"
   }
 }
